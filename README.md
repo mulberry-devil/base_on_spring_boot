@@ -185,3 +185,82 @@ Date issuedAt = claim.getIssuedAt();
 Object uid = claim.get("UID");
 ```
 
+### 引用场景
+
+#### 登录控制
+
+- 流程
+
+  - 首次登录时产生`jwt`后随着`response`的`header`或者`body`传递到前端
+
+  - 前端`response`拦截器拦截请求后将`jwt`存到本地`session`、`cookies`、`LocalStorage`或者其他
+
+  - 之后每次前端向后端请求时从本地获取`jwt`并携带`jwt`到请求头进行请求
+
+  - 后端拦截后对`jwt`进行处理，并且每次生成新的`jwt`避免使用过程中失效
+
+- 知识点
+
+  - spring boot拦截器
+
+    - 写一个拦截类实现`HandlerInterceptor`重写方法
+
+      ```java
+      package com.caston.base_on_spring_boot.jjwt.interceptor;
+      
+      import org.springframework.web.servlet.HandlerInterceptor;
+      
+      import javax.servlet.http.HttpServletRequest;
+      import javax.servlet.http.HttpServletResponse;
+      
+      public class LoginInterceptor implements HandlerInterceptor {
+          @Override
+          public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+              return HandlerInterceptor.super.preHandle(request, response, handler);
+          }
+      }
+      ```
+
+    - 写一个配置类（实现`WebMvcConfigurer`），将拦截类配置进去
+
+      ```java
+      package com.caston.base_on_spring_boot.jjwt.config;
+      
+      import com.caston.base_on_spring_boot.jjwt.interceptor.LoginInterceptor;
+      import org.springframework.context.annotation.Configuration;
+      import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+      import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+      
+      @Configuration
+      public class WebConfig implements WebMvcConfigurer {
+          @Override
+          public void addInterceptors(InterceptorRegistry registry) {
+              registry.addInterceptor(new LoginInterceptor()) // 配置拦截类
+                  .addPathPatterns("/jjwt/**"); // 拦截规则
+          }
+      }
+      ```
+
+  - 当需要操作请求头时，需要使用`ResponseEntity`返回给前端
+
+    ```java
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "userId", value = "用户id", paramType = "path"),
+        @ApiImplicitParam(name = "password", value = "密码", paramType = "path")
+    })
+    @GetMapping("/login/{userId}/{password}")
+    public ResponseEntity login(@PathVariable String userId, @PathVariable String password) {
+        String jwt = JWTUtil.generate(userId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("admin-token",jwt);
+        return new ResponseEntity("可将返回对象或者JSON放入此位置",headers, HttpStatus.OK);
+    }
+    ```
+
+#### 接口授权
+
+通过token来对用户可以调用哪些接口进行授权
+
+#### url有效期控制
+
+通过token中的有效期来控制时间

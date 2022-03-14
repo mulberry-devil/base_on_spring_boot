@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Api(tags = "在swagger-ui为该类定义名字")
 @RestController
+@RequestMapping("/swagger")
 public class HelloColltroller {
     @ApiOperation(value = "在swagger-ui为该类中的方法定义名字", notes = "方法的备注说明")
     @GetMapping("/hello")
