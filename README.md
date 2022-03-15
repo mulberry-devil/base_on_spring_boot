@@ -264,3 +264,152 @@ Object uid = claim.get("UID");
 #### url有效期控制
 
 通过token中的有效期来控制时间
+
+## MybatisPlus
+
+### 引用依赖
+
+```xml
+<!-- mybatis-plus依赖 -->
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-boot-starter</artifactId>
+    <version>3.4.2</version>
+</dependency>
+<!-- MySQL依赖 -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <scope>runtime</scope>
+</dependency>
+<!-- druid依赖 -->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.1.22</version>
+</dependency>
+<!--mybatis-plus 代码生成器-->
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-generator</artifactId>
+    <version>3.4.1</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.velocity</groupId>
+    <artifactId>velocity-engine-core</artifactId>
+    <version>2.0</version>
+</dependency>
+```
+
+### 知识点讲解
+
+- 数据源配置以及数据初始化（在没有分库分表的情况下）
+
+  ```properties
+  spring.datasource.druid.name=base_spring_boot
+  spring.datasource.druid.url=jdbc:mysql://localhost:3306/base_spring_boot?serverTimezone=UTC
+  spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
+  spring.datasource.druid.username=root
+  spring.datasource.druid.password=123456
+  # 监控统计
+  spring.datasource.druid.filters=stat
+  # 初始化连接
+  spring.datasource.druid.initial-size=2
+  # 最小空闲连接数
+  spring.datasource.druid.min-idle=1
+  # 最大活动连接
+  spring.datasource.druid.max-active=20
+  # 获取连接超时的等待时间
+  spring.datasource.druid.max-wait=60000
+  # 间隔多久进行一次检测，检测需要关闭的空闲连接
+  spring.datasource.druid.time-between-eviction-runs-millis=6000
+  # 一个连接在池中最小生产的空间
+  spring.datasource.druid.min-evictable-idle-time-millis=300000
+  # 验证连接有效与否的SQL
+  spring.datasource.druid.validation-query=SELECT 'x'
+  # 指明连接是否被空闲连接回收器（如果有）进行检验，如果检验失败，则连接将被从池中去除
+  spring.datasource.druid.test-while-idle=true
+  # 借出连接时不要测试，否则影响性能
+  spring.datasource.druid.test-on-borrow=false
+  # sql数据初始化
+  ## 指定建表语句sql文件，需要提前建好
+  spring.datasource.schema=classpath*:sql/*.sql
+  ## 指定数据sql文件，需要提前建好
+  spring.datasource.data=classpath*:sql/data/*.sql
+  spring.datasource.initialization-mode=always
+  ```
+
+- `Mapper`继承`BaseMapper<实体类名>`，`Service`继承`IService<实体类名>`，`ServiceImpl`继承`ServiceImpl<Mapper类名, 实体类名>`
+
+### 代码生成器
+
+```java
+// 1、创建代码生成器
+AutoGenerator mpg = new AutoGenerator();
+// 2、全局配置
+GlobalConfig gc = new GlobalConfig();
+String projectPath = System.getProperty("user.dir");
+gc.setOutputDir(projectPath + "/src/main/java");
+gc.setAuthor("caston");
+gc.setOpen(false); //生成后是否打开资源管理器
+gc.setServiceName("%sService");	//去掉Service接口的首字母I
+mpg.setGlobalConfig(gc);
+// 3、数据源配置
+DataSourceConfig dsc = new DataSourceConfig();
+dsc.setUrl("jdbc:mysql://localhost:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8");
+dsc.setDriverName("com.mysql.cj.jdbc.Driver");
+dsc.setUsername("root");
+dsc.setPassword("123456");
+dsc.setDbType(DbType.MYSQL);
+mpg.setDataSource(dsc);
+// 4、包配置
+PackageConfig pc = new PackageConfig();
+pc.setParent("com.caston.base_on_spring_boot.mybatisplus");
+pc.setEntity("entity"); //此对象与数据库表结构一一对应，通过 DAO 层向上传输数据源对象。
+mpg.setPackageInfo(pc);
+// 5、策略配置
+StrategyConfig strategy = new StrategyConfig();
+strategy.setNaming(NamingStrategy.underline_to_camel);//数据库表映射到实体的命名策略
+strategy.setColumnNaming(NamingStrategy.underline_to_camel);//数据库表字段映射到实体的命名策略
+strategy.setEntityLombokModel(true); // lombok
+strategy.setRestControllerStyle(true); //restful api风格控制器
+mpg.setStrategy(strategy);
+// 6、执行
+mpg.execute();
+```
+
+### 分页插件
+
+- 配置分页插件
+
+  ```java
+  package com.caston.base_on_spring_boot.mybatisplus.config;
+  
+  import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+  import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+  import org.mybatis.spring.annotation.MapperScan;
+  import org.springframework.context.annotation.Bean;
+  import org.springframework.context.annotation.Configuration;
+  
+  @Configuration
+  @MapperScan("com.caston.base_on_spring_boot.mybatisplus.mapper")
+  public class MybatisPlusConfig {
+      /*
+      分页插件
+       */
+      @Bean
+      public MybatisPlusInterceptor mybatisPlusInterceptor() {
+          MybatisPlusInterceptor mybatisPlusInterceptor = new MybatisPlusInterceptor();
+          mybatisPlusInterceptor.addInnerInterceptor(new PaginationInnerInterceptor());
+          return mybatisPlusInterceptor;
+      }
+  }
+  ```
+
+- 分页举例
+
+  ```java
+  Page<User> page = new Page<>(current,pageSize);
+  Page<User> userPage = userMapper.selectPage(page, new QueryWrapper<>());
+  ```
+
