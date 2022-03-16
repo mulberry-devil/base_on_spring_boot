@@ -305,38 +305,39 @@ Object uid = claim.get("UID");
 
 - 数据源配置以及数据初始化（在没有分库分表的情况下）
 
-  ```properties
-  spring.datasource.druid.name=base_spring_boot
-  spring.datasource.druid.url=jdbc:mysql://localhost:3306/base_spring_boot?serverTimezone=UTC
-  spring.datasource.druid.driver-class-name=com.mysql.cj.jdbc.Driver
-  spring.datasource.druid.username=root
-  spring.datasource.druid.password=123456
-  # 监控统计
-  spring.datasource.druid.filters=stat
-  # 初始化连接
-  spring.datasource.druid.initial-size=2
-  # 最小空闲连接数
-  spring.datasource.druid.min-idle=1
-  # 最大活动连接
-  spring.datasource.druid.max-active=20
-  # 获取连接超时的等待时间
-  spring.datasource.druid.max-wait=60000
-  # 间隔多久进行一次检测，检测需要关闭的空闲连接
-  spring.datasource.druid.time-between-eviction-runs-millis=6000
-  # 一个连接在池中最小生产的空间
-  spring.datasource.druid.min-evictable-idle-time-millis=300000
-  # 验证连接有效与否的SQL
-  spring.datasource.druid.validation-query=SELECT 'x'
-  # 指明连接是否被空闲连接回收器（如果有）进行检验，如果检验失败，则连接将被从池中去除
-  spring.datasource.druid.test-while-idle=true
-  # 借出连接时不要测试，否则影响性能
-  spring.datasource.druid.test-on-borrow=false
-  # sql数据初始化
-  ## 指定建表语句sql文件，需要提前建好
-  spring.datasource.schema=classpath*:sql/*.sql
-  ## 指定数据sql文件，需要提前建好
-  spring.datasource.data=classpath*:sql/data/*.sql
-  spring.datasource.initialization-mode=always
+  ```yaml
+  spring:
+    application:
+      name: base_on_spring_boot # 应用名称
+    datasource:
+      druid:
+        name: base_spring_boot
+        url: jdbc:mysql://112.74.87.145:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: cqs_root
+        password: cqs9527
+        filters: stat # 监控统计
+        initial-size: 2 # 初始化连接
+        max-idle: 10 # 最大空闲连接数
+        min-idle: 1 # 最小空闲连接数
+        max-active: 20 # 最大活动连接
+        max-wait: 60000 # 获取连接超时的等待时间
+        time-between-eviction-runs-millis: 60000 # 间隔多久进行一次检测，检测需要关闭的空闲连接
+        min-evictable-idle-time-millis: 300000 # 一个连接在池中最小生产的空间
+        validation-query: SELECT 'x' # 验证连接有效与否的SQL
+        test-while-idle: true # 指明连接是否被空闲连接回收器（如果有）进行检验，如果检验失败，则连接将被从池中去除
+        test-on-borrow: false # 借出连接时不要测试，否则影响性能
+      # sql数据初始化
+      schema:
+        - classpath*:sql/*.sql # 指定建表语句sql文件，需要提前建好
+      data:
+        - classpath*:sql/data/*.sql # 指定数据sql文件，需要提前建好
+      initialization-mode: always
+  mybatis-plus:
+    configuration:
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印执行的sql语句
+    mapper-locations:
+      - classpath:com/caston/base_on_spring_boot/*/mapper/xml/*.xml
   ```
 
 - `Mapper`继承`BaseMapper<实体类名>`，`Service`继承`IService<实体类名>`，`ServiceImpl`继承`ServiceImpl<Mapper类名, 实体类名>`
@@ -412,4 +413,6 @@ mpg.execute();
   Page<User> page = new Page<>(current,pageSize);
   Page<User> userPage = userMapper.selectPage(page, new QueryWrapper<>());
   ```
+
+## ShardingSphere
 

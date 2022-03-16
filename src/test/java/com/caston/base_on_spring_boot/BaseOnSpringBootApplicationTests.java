@@ -48,15 +48,15 @@ class BaseOnSpringBootApplicationTests {
         mpg.setGlobalConfig(gc);
         // 3、数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://localhost:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8");
+        dsc.setUrl("jdbc:mysql://112.74.87.145:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8");
         dsc.setDriverName("com.mysql.cj.jdbc.Driver");
-        dsc.setUsername("root");
-        dsc.setPassword("123456");
+        dsc.setUsername("cqs_root");
+        dsc.setPassword("cqs9527");
         dsc.setDbType(DbType.MYSQL);
         mpg.setDataSource(dsc);
         // 4、包配置
         PackageConfig pc = new PackageConfig();
-        pc.setParent("com.caston.base_on_spring_boot.mybatisplus");
+        pc.setParent("com.caston.base_on_spring_boot.shardingsphere");
         pc.setEntity("entity"); //此对象与数据库表结构一一对应，通过 DAO 层向上传输数据源对象。
         mpg.setPackageInfo(pc);
         // 5、策略配置
