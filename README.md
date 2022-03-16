@@ -416,3 +416,85 @@ mpg.execute();
 
 ## ShardingSphere
 
+### 引入依赖
+
+```xml
+<dependency>
+    <groupId>org.apache.shardingsphere</groupId>
+    <artifactId>shardingsphere-jdbc-core-spring-boot-starter</artifactId>
+    <version>5.0.0-alpha</version>
+</dependency>
+<!-- 导入druid-spring-boot-starter后启动会报错 -->
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba</groupId>-->
+<!--            <artifactId>druid-spring-boot-starter</artifactId>-->
+<!--            <version>1.1.22</version>-->
+<!--        </dependency>-->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.2.8</version>
+</dependency>
+```
+
+### 分库分表配置
+
+```yaml
+spring:
+  # ShardingSphere配置
+  shardingsphere:
+    enabled: true # 可在此开启或关闭
+    ## 分库-读写分离
+    datasource:
+      common:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        password: 密码
+      names: master,slave0,slave1 # 指定三个数据源名称
+      master: # 配置第一个数据源
+        url: jdbc:mysql://ip:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8
+        username: 账号
+      slave0: # 配置第二个数据源
+        url: jdbc:mysql://ip:3306/wechat_netty?serverTimezone=UTC&characterEncoding=utf-8
+        username: 账号
+      slave1: # 配置第三个数据源
+        url: jdbc:mysql://ip:3306/base_spring_1?serverTimezone=UTC&characterEncoding=utf-8
+        username: 账号
+    rules:
+      ## 分库-读写分离
+      replica-query:
+        data-sources:
+          ms: # 定义数据源名字
+            primary-data-source-name: master # 指定主数据源
+            replica-data-source-names: slave0,slave1 # 指定从数据源
+            load-balancer-name: round_robin # 负载均衡算法名称
+        load-balancers:
+          <上面定义的负载均衡算法名称>:
+            type: ROUND_ROBIN # 负载均衡算法配置
+            props:
+              workId: 1 # 负载均衡算法属性配置
+      ## 分表
+      sharding:
+        bindingTables:
+          - <表名>
+        tables:
+          user:
+            actualDataNodes: <上面定义数据源名字>.<表名>_$->{0..2} # 标准分片表配置：由数据源 + 表名组成，多个表以逗号分割
+            tableStrategy:
+              standard: # 配置分片场景
+                shardingColumn: <表中列名> # 分片列名称
+                shardingAlgorithmName: table-inline # 分片算法名称
+        keyGenerators: # 雪花算法配置
+          snowflake:
+            type: SNOWFLAKE
+            props:
+              worker-id: 123
+        shardingAlgorithms: # 自定义分片算法
+          <上面定义的分片算法名称>:
+            type: INLINE
+            props:
+              algorithm-expression: <表名>_$->{<表中列名> % 3}
+    props:
+      sql-show: true # 打印sql
+```
+

@@ -39,16 +39,16 @@ spring:
         url: jdbc:mysql://112.74.87.145:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8
         username: cqs_root
       slave0: # 配置第二个数据源
-        url: jdbc:mysql://112.74.87.145:3306/wechat_netty?serverTimezone=UTC&characterEncoding=utf-8
-        username: cqs_admin
+        url: jdbc:mysql://112.74.87.145:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8
+        username: cqs_root
       slave1: # 配置第三个数据源
-        url: jdbc:mysql://112.74.87.145:3306/base_spring_1?serverTimezone=UTC&characterEncoding=utf-8
-        username: base_spring_1
+        url: jdbc:mysql://112.74.87.145:3306/base_spring_boot?serverTimezone=UTC&characterEncoding=utf-8
+        username: cqs_root
     rules:
       ## 分库-读写分离
       replica-query:
         data-sources:
-          ms:
+          ms: # 定义数据源名字
             primary-data-source-name: master # 指定主数据源
             replica-data-source-names: slave0,slave1 # 指定从数据源
             load-balancer-name: round_robin # 负载均衡算法名称
@@ -63,7 +63,7 @@ spring:
           - user
         tables:
           user:
-            actualDataNodes: master.user_$->{0..2} # 标准分片表配置：由数据源 + 表名组成，多个表以逗号分割
+            actualDataNodes: ms.user_$->{0..2} # 标准分片表配置：由数据源 + 表名组成，多个表以逗号分割
             tableStrategy:
               standard: # 配置分片场景
                 shardingColumn: id # 分片列名称
@@ -75,7 +75,7 @@ spring:
               worker-id: 123
         shardingAlgorithms: # 自定义分片算法
           table-inline:
-            type: INLLINE
+            type: INLINE
             props:
               algorithm-expression: user_$->{id % 3}
     props:
