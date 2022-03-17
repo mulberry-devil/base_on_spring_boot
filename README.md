@@ -527,5 +527,344 @@ spring:
 </dependency>
 ```
 
-### 运用注解认证授权
+### 认证以及使用注解配置权限
+
+1. 创建登录认证以及权限表类，实现`UserDetailsService`
+
+   ```java
+   package com.caston.base_on_spring_boot.springsecurity.service;
+   
+   import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+   import com.caston.base_on_spring_boot.springsecurity.entity.LoginTable;
+   import com.caston.base_on_spring_boot.springsecurity.entity.Permission;
+   import com.caston.base_on_spring_boot.springsecurity.entity.Role;
+   import com.caston.base_on_spring_boot.springsecurity.mapper.LoginTableMapper;
+   import com.caston.base_on_spring_boot.springsecurity.mapper.PermissionMapper;
+   import com.caston.base_on_spring_boot.springsecurity.mapper.RoleMapper;
+   import org.springframework.security.core.GrantedAuthority;
+   import org.springframework.security.core.authority.SimpleGrantedAuthority;
+   import org.springframework.security.core.userdetails.User;
+   import org.springframework.security.core.userdetails.UserDetails;
+   import org.springframework.security.core.userdetails.UserDetailsService;
+   import org.springframework.security.core.userdetails.UsernameNotFoundException;
+   import org.springframework.stereotype.Service;
+   
+   import javax.annotation.Resource;
+   import java.util.ArrayList;
+   import java.util.List;
+   
+   @Service
+   public class LoginSecurityService implements UserDetailsService {
+       @Resource
+       private LoginTableMapper loginTableMapper;
+       @Resource
+       private RoleMapper roleMapper;
+       @Resource
+       private PermissionMapper permissionMapper;
+   
+       @Override
+       public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+           LoginTable user = loginTableMapper.selectOne(new LambdaQueryWrapper<LoginTable>().eq(LoginTable::getUsername, username));
+           if (user == null) {
+               throw new UsernameNotFoundException("用户不存在");
+           }
+           ArrayList<GrantedAuthority> authorities = new ArrayList<>(); // 权限List
+           List<Role> roleList = roleMapper.findRoleListByUserId(user.getId());
+           roleList.forEach(i -> {
+               authorities.add(new SimpleGrantedAuthority("ROLE_" + i.getRoleKeyword())); // 将权限名，角色名添加至权限List中
+               List<Permission> permissionList = permissionMapper.findPermissionByRole(i.getId());
+               permissionList.forEach(j -> {
+                   authorities.add(new SimpleGrantedAuthority(j.getPermissionKeyword())); // 将权限名，角色名添加至权限List中
+               });
+           });
+           //  数据库密码应为经过 new BCryptPasswordEncoder().encode("密码") 编译后的
+           UserDetails userDetails = new User(username, user.getPassword(), authorities);
+           return userDetails;
+       }
+   }
+   ```
+
+2. 配置类
+
+   ```java
+   package com.caston.base_on_spring_boot.springsecurity.config;
+   
+   import com.caston.base_on_spring_boot.springsecurity.service.LoginSecurityService;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+   import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+   import org.springframework.security.config.annotation.web.builders.WebSecurity;
+   import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+   import org.springframework.security.core.Authentication;
+   import org.springframework.security.core.AuthenticationException;
+   import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+   import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+   import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+   import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+   
+   import javax.annotation.Resource;
+   import javax.servlet.ServletException;
+   import javax.servlet.http.HttpServletRequest;
+   import javax.servlet.http.HttpServletResponse;
+   import java.io.IOException;
+   
+   @Configuration
+   @EnableGlobalMethodSecurity(prePostEnabled = true) // 开启注解配置权限
+   public class SecurityConfig extends WebSecurityConfigurerAdapter {
+   
+       @Resource
+       private LoginSecurityService loginSecurityService;
+   
+       @Bean
+       public BCryptPasswordEncoder bCryptPasswordEncoder() {
+           return new BCryptPasswordEncoder();
+       }
+   
+       @Override
+       protected void configure(HttpSecurity http) throws Exception {
+           http.userDetailsService(loginSecurityService); // 自定义认证对象，单个时可写可不写，一般是多个service时才写
+           http.authorizeRequests() // 开启登录配置
+                   //  .antMatchers("/loginTable/findAll").hasRole("admin") // 访问接口授权，此例说明需要角色为admin
+                   .antMatchers("/login").permitAll()
+                   .anyRequest().authenticated() // 其他所有请求，只需要登录即可，其他所有请求，只需要登录即可，在使用数据库配置权限时需要注释掉
+                   .and().formLogin()
+                   //  .loginPage("/login.html") // 自定义登录界面
+                   .loginProcessingUrl("/login") // 登录处理接口
+                   .usernameParameter("username") // 定义登陆时的用户名的key，默认为username
+                   .passwordParameter("password") // 定义登陆时的密码的key，默认为password
+                   //  .successForwardUrl("") // 登录成功跳转url，为post请求
+                   //  .defaultSuccessUrl("") // 登录成功跳转url，为get请求
+                   .successHandler(new AuthenticationSuccessHandler() {
+                       @Override
+                       public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                           System.out.println("1111111111111111111111111111111111111111111111");
+                       }
+                   }) // 登录成功处理器
+                   .failureHandler(new AuthenticationFailureHandler() {
+                       @Override
+                       public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
+                           System.out.println("22222222222222222222222222222222222222222");
+                       }
+                   }) // 登录失败处理器
+                   .permitAll()
+                   .and().logout()
+                   .logoutUrl("/logout") // 退出登录接口
+                   .logoutSuccessHandler(new LogoutSuccessHandler() {
+                       @Override
+                       public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                           System.out.println("333333333333333333333333333333333");
+                       }
+                   }) // 退出登录成功处理器
+                   .permitAll()
+                   .and().httpBasic().and().csrf().disable();
+       }
+   
+       /*
+       忽略swagger
+        */
+       @Override
+       public void configure(WebSecurity web) throws Exception {
+           web.ignoring().antMatchers("/swagger-ui/**")
+                   .antMatchers("/v3/**")
+                   .antMatchers("/swagger-resources/**");
+       }
+   }
+   ```
+
+3. 在控制层使用注解规定权限表中权限规则
+
+   ```java
+   @GetMapping("/findAll")
+   @PreAuthorize("hasAuthority('USER_FINDALL')") // 配置权限，对应权限列表中的名
+   public List<LoginTable> findAll() {
+       List<LoginTable> users = loginTableService.list();
+       return users;
+   }
+   @GetMapping("/findAge")
+   @PreAuthorize("hasRole('ROLE_ADMIN')") // 配置角色，对应权限列表中的名
+   public List<LoginTable> findAge() {
+       List<LoginTable> users = loginTableService.list();
+       return users;
+   }
+   ```
+
+### 通过读取数据库进行授权
+
+   1. 自定义权限类，将数据库权限和路径匹配，实现`GrantedAuthority`
+
+      ```java
+      package com.caston.base_on_spring_boot.springsecurity.service.security;
+      
+      import org.springframework.security.core.GrantedAuthority;
+      
+      public class MySimpleGrantedAuthority implements GrantedAuthority {
+      
+          private String authority;
+      
+          public String getPath() {
+              return path;
+          }
+      
+          private String path;
+      
+          public MySimpleGrantedAuthority(String authority) {
+              this.authority = authority;
+          }
+      
+          public MySimpleGrantedAuthority(String authority, String path) {
+              this.authority = authority;
+              this.path = path;
+          }
+      
+          @Override
+          public String getAuthority() {
+              return authority;
+          }
+      }
+      ```
+
+   2. 自定义`service `来实现实时的权限认证
+
+      ```java
+      package com.caston.base_on_spring_boot.springsecurity.service.security;
+      
+      import org.apache.commons.lang3.StringUtils;
+      import org.springframework.security.core.Authentication;
+      import org.springframework.security.core.GrantedAuthority;
+      import org.springframework.security.core.userdetails.UserDetails;
+      import org.springframework.stereotype.Service;
+      
+      import javax.servlet.http.HttpServletRequest;
+      import java.util.Collection;
+      
+      @Service
+      public class AuthService {
+          /**
+           * 自定义权限授权
+           *
+           * @param request
+           * @param authentication
+           * @return true为放行，false代表拦截
+           */
+          public boolean auth(HttpServletRequest request, Authentication authentication) {
+              Object principal = authentication.getPrincipal();
+              // 没有登录时为空或者为匿名状态
+              if (principal == null || "anonymousUser".equals(principal)) {
+                  return false;
+              }
+              UserDetails userDetails = (UserDetails) principal;
+              Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+              for (GrantedAuthority authority : authorities) {
+                  MySimpleGrantedAuthority mySimpleGrantedAuthority = (MySimpleGrantedAuthority) authority;
+                  String path = mySimpleGrantedAuthority.getPath();
+                  String[] split = StringUtils.split(request.getRequestURI(), "?");
+                  if (split[0].equals(path)) {
+                      return true;
+                  }
+              }
+              return false;
+          }
+      }
+      ```
+
+   3. 修改配置类
+
+      ```java
+      //@EnableGlobalMethodSecurity(prePostEnabled = true) // 开启注解配置权限
+      
+      .anyRequest().access("@authService.auth(request,authentication)")
+      //  .anyRequest().authenticated()
+      ```
+
+      完整代码
+
+      ```java
+      package com.caston.base_on_spring_boot.springsecurity.config;
+      
+      import com.caston.base_on_spring_boot.springsecurity.service.security.LoginSecurityService;
+      import org.springframework.context.annotation.Bean;
+      import org.springframework.context.annotation.Configuration;
+      import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+      import org.springframework.security.config.annotation.web.builders.WebSecurity;
+      import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+      import org.springframework.security.core.Authentication;
+      import org.springframework.security.core.AuthenticationException;
+      import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+      import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+      import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+      import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+      
+      import javax.annotation.Resource;
+      import javax.servlet.ServletException;
+      import javax.servlet.http.HttpServletRequest;
+      import javax.servlet.http.HttpServletResponse;
+      import java.io.IOException;
+      
+      @Configuration
+      //@EnableGlobalMethodSecurity(prePostEnabled = true) // 开启注解配置权限
+      public class SecurityConfig extends WebSecurityConfigurerAdapter {
+      
+          @Resource
+          private LoginSecurityService loginSecurityService;
+      
+          @Bean
+          public BCryptPasswordEncoder bCryptPasswordEncoder() {
+              return new BCryptPasswordEncoder();
+          }
+      
+          @Override
+          protected void configure(HttpSecurity http) throws Exception {
+              http.userDetailsService(loginSecurityService); // 自定义认证对象，单个时可写可不写，一般是多个service时才写
+              http.authorizeRequests() // 开启登录配置
+                      //  .antMatchers("/loginTable/findAll").hasRole("admin") // 访问接口授权，此例说明需要角色为admin
+                      .antMatchers("/login").permitAll()
+                      .anyRequest().access("@authService.auth(request,authentication)") // 自定义service 来实现实时的权限认证，@后可以使用bean中的任何对象，此参数与类中的方法参数名一样
+      //                .anyRequest().authenticated() // 其他所有请求，只需要登录即可，在使用数据库配置权限时需要注释掉
+                      .and().formLogin()
+                      //  .loginPage("/login.html") // 自定义登录界面
+                      .loginProcessingUrl("/login") // 登录处理接口
+                      .usernameParameter("username") // 定义登陆时的用户名的key，默认为username
+                      .passwordParameter("password") // 定义登陆时的密码的key，默认为password
+                      //  .successForwardUrl("") // 登录成功跳转url，为post请求
+                      //  .defaultSuccessUrl("") // 登录成功跳转url，为get请求
+                      .successHandler(new AuthenticationSuccessHandler() {
+                          @Override
+                          public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                              System.out.println("1111111111111111111111111111111111111111111111");
+                          }
+                      }) // 登录成功处理器
+                      .failureHandler(new AuthenticationFailureHandler() {
+                          @Override
+                          public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
+                              System.out.println("22222222222222222222222222222222222222222");
+                          }
+                      }) // 登录失败处理器
+                      .permitAll()
+                      .and().logout()
+                      .logoutUrl("/logout") // 退出登录接口
+                      .logoutSuccessHandler(new LogoutSuccessHandler() {
+                          @Override
+                          public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                              System.out.println("333333333333333333333333333333333");
+                          }
+                      }) // 退出登录成功处理器
+                      .permitAll()
+                      .and().httpBasic().and().csrf().disable();
+          }
+      
+          /*
+          忽略swagger
+           */
+          @Override
+          public void configure(WebSecurity web) throws Exception {
+              web.ignoring().antMatchers("/swagger-ui/**")
+                      .antMatchers("/v3/**")
+                      .antMatchers("/swagger-resources/**");
+          }
+      }
+      ```
+
+
+
 

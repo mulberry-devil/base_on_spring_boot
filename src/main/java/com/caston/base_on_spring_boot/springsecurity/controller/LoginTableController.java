@@ -28,14 +28,14 @@ public class LoginTableController {
     private LoginTableService loginTableService;
 
     @GetMapping("/findAll")
-    @PreAuthorize("hasAuthority('USER_FINDALL')")
+//    @PreAuthorize("hasAuthority('USER_FINDALL')") // 配置权限，对应权限列表中的名
     public List<LoginTable> findAll() {
         List<LoginTable> users = loginTableService.list();
         return users;
     }
 
     @GetMapping("/findAge")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')") // 配置角色，对应权限列表中的名
     public List<LoginTable> findAge() {
         List<LoginTable> users = loginTableService.list();
         return users;
