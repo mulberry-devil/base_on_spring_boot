@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.caston.base_on_spring_boot.springsecurity.mapper.RoleMapper">
+    <resultMap id="roleMap" type="com.caston.base_on_spring_boot.springsecurity.entity.Role">
+        <id column="id" property="id"/>
+        <result column="role_name" property="roleName"/>
+        <result column="role_desc" property="roleDesc"/>
+        <result column="role_keyword" property="roleKeyword"/>
+    </resultMap>
+
+    <select id="findRoleListByUserId" parameterType="long" resultMap="roleMap">
+        select * from role where id in (select role_id from user_role where user_id=#{userId})
+    </select>
+</mapper>

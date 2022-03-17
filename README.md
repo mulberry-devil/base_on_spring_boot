@@ -337,8 +337,26 @@ Object uid = claim.get("UID");
     configuration:
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 打印执行的sql语句
     mapper-locations:
-      - classpath:com/caston/base_on_spring_boot/*/mapper/xml/*.xml
+      - classpath:com/caston/base_on_spring_boot/*/mapper/xml/*.xml # 指定xml所在位置
   ```
+
+- 因为用代码生成器生成的xml不在resource中，所以需要在pom.xml中指定加载路径
+
+  ```xml
+  <build>
+      <resources>
+          <resource>
+              <!--   描述存放资源的目录，该路径相对POM路径-->
+              <directory>src/main/java</directory>
+              <includes>
+                  <include>**/*.xml</include>
+              </includes>
+          </resource>
+      </resources>
+  </build>
+  ```
+
+  
 
 - `Mapper`继承`BaseMapper<实体类名>`，`Service`继承`IService<实体类名>`，`ServiceImpl`继承`ServiceImpl<Mapper类名, 实体类名>`
 
@@ -497,4 +515,17 @@ spring:
     props:
       sql-show: true # 打印sql
 ```
+
+## Spring Security
+
+### 引入依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+### 运用注解认证授权
 

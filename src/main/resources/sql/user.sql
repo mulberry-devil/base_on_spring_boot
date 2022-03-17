@@ -1,21 +1,57 @@
-create table if not exists user_0(
-    id BIGINT(20) NOT NULL COMMENT '主键ID',
-    name VARCHAR(30) NULL DEFAULT NULL COMMENT '姓名',
-    age INT(11) NULL DEFAULT NULL COMMENT '年龄',
-    email VARCHAR(50) NULL DEFAULT NULL COMMENT '邮箱',
-    PRIMARY KEY (id)
-);
-create table if not exists user_1(
-    id BIGINT(20) NOT NULL COMMENT '主键ID',
-    name VARCHAR(30) NULL DEFAULT NULL COMMENT '姓名',
-    age INT(11) NULL DEFAULT NULL COMMENT '年龄',
-    email VARCHAR(50) NULL DEFAULT NULL COMMENT '邮箱',
-    PRIMARY KEY (id)
-);
-create table if not exists user_2(
-    id BIGINT(20) NOT NULL COMMENT '主键ID',
-    name VARCHAR(30) NULL DEFAULT NULL COMMENT '姓名',
-    age INT(11) NULL DEFAULT NULL COMMENT '年龄',
-    email VARCHAR(50) NULL DEFAULT NULL COMMENT '邮箱',
-    PRIMARY KEY (id)
-);
+--create table if not exists user_0(
+--    id BIGINT(20) NOT NULL COMMENT '主键ID',
+--    name VARCHAR(30) NULL DEFAULT NULL COMMENT '姓名',
+--    age INT(11) NULL DEFAULT NULL COMMENT '年龄',
+--    email VARCHAR(50) NULL DEFAULT NULL COMMENT '邮箱',
+--    PRIMARY KEY (id)
+--);
+--create table if not exists user_1(
+--    id BIGINT(20) NOT NULL COMMENT '主键ID',
+--    name VARCHAR(30) NULL DEFAULT NULL COMMENT '姓名',
+--    age INT(11) NULL DEFAULT NULL COMMENT '年龄',
+--    email VARCHAR(50) NULL DEFAULT NULL COMMENT '邮箱',
+--    PRIMARY KEY (id)
+--);
+--create table if not exists user_2(
+--    id BIGINT(20) NOT NULL COMMENT '主键ID',
+--    name VARCHAR(30) NULL DEFAULT NULL COMMENT '姓名',
+--    age INT(11) NULL DEFAULT NULL COMMENT '年龄',
+--    email VARCHAR(50) NULL DEFAULT NULL COMMENT '邮箱',
+--    PRIMARY KEY (id)
+--);
+--create table if not exists admin_user(
+--    id BIGINT(20) NOT NULL AUTO_INCREMENT,
+--    username VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    password VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    create_time BIGINT(0) NOT NULL,
+--    PRIMARY KEY (id) USING BTREE
+--)ENGINE = InnoDB CHARACTER set = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+--create table if not exists role(
+--    id int(0) NOT NULL AUTO_INCREMENT,
+--    role_name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    role_desc VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    role_keyword VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    PRIMARY KEY (id) USING BTREE
+--)ENGINE = InnoDB CHARACTER set = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+--create table if not exists user_role(
+--    id BIGINT(0) NOT NULL AUTO_INCREMENT,
+--    user_id BIGINT(0) NOT NULL,
+--    role_id INT(0) NOT NULL,
+--    PRIMARY KEY (id) USING BTREE,
+--    INDEX user_id(user_id) USING BTREE
+--)ENGINE = InnoDB CHARACTER set = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+--create table if not exists permission(
+--    id int(0) NOT NULL AUTO_INCREMENT,
+--    name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    desc VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    permission_keyword VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    path VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+--    PRIMARY KEY (id) USING BTREE
+--)ENGINE = InnoDB CHARACTER set = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+--create table if not exists role_permission(
+--    id BIGINT(0) NOT NULL AUTO_INCREMENT,
+--    role_id INT(0) NOT NULL,
+--    permission_id INT(0) NOT NULL,
+--    PRIMARY KEY (id) USING BTREE,
+--    INDEX role_id(role_id) USING BTREE
+--)ENGINE = InnoDB CHARACTER set = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;

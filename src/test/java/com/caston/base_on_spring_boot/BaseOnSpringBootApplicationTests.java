@@ -56,7 +56,7 @@ class BaseOnSpringBootApplicationTests {
         mpg.setDataSource(dsc);
         // 4、包配置
         PackageConfig pc = new PackageConfig();
-        pc.setParent("com.caston.base_on_spring_boot.shardingsphere");
+        pc.setParent("com.caston.base_on_spring_boot.springsecurity");
         pc.setEntity("entity"); //此对象与数据库表结构一一对应，通过 DAO 层向上传输数据源对象。
         mpg.setPackageInfo(pc);
         // 5、策略配置

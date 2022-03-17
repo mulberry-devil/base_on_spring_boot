@@ -1,6 +1,10 @@
-replace into user (id,name,age,email) VALUES
-(1,'aaa',1,'aaa@aaa'),
-(2,'bbb',2,'bbb@bbb'),
-(3,'ccc',3,'ccc@ccc'),
-(4,'ddd',4,'ddd@ddd'),
-(5,'eee',5,'eee@eee');
+--replace into user (id,name,age,email) VALUES
+--(1,'aaa',1,'aaa@aaa'),
+--(2,'bbb',2,'bbb@bbb'),
+--(3,'ccc',3,'ccc@ccc'),
+--(4,'ddd',4,'ddd@ddd'),
+--(5,'eee',5,'eee@eee');
+--insert into role values (1,'管理员','管理员','ADMIN');
+--insert into role values (2,'运营','运营部门','BUSINESS');
+--insert into permission values (1,'查询全部','查询全部','USER_FINDALL','/loginTable/findAll');
+--insert into permission values (2,'年龄查询','年龄查询','USER_FINDAGE','/loginTable/findAge');

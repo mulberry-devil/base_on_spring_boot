@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.caston.base_on_spring_boot.mybatisplus.mapper")
+@MapperScan("com.caston.base_on_spring_boot.*.mapper")
 public class MybatisPlusConfig {
     /*
     分页插件
