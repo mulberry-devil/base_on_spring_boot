@@ -1,6 +1,8 @@
 package com.caston.base_on_spring_boot.ehcache.service;
 
 import com.caston.base_on_spring_boot.ehcache.entity.EhcacheUser;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +21,7 @@ public class EhcacheService {
         map.put("444", new EhcacheUser("444", "ddd", 4));
     }
 
-    @Cacheable(value = "users", key = "'userid:' + #id")
+    @Cacheable(value = "users", key = "#id")
     public EhcacheUser get(String id) {
         System.out.println("测试是否走缓存");
         return map.get(id);
@@ -29,5 +31,16 @@ public class EhcacheService {
     public EhcacheUser getById(String id) {
         System.out.println("测试是否走缓存------");
         return map.get(id);
+    }
+
+    @CachePut(value = "users", key = "#id")
+    public EhcacheUser getCachePut(String id) {
+        System.out.println("测试是否走缓存");
+        return map.get(id);
+    }
+
+    @CacheEvict(value = "users", key = "#id")
+    public void getCacheEvict(String id) {
+        System.out.println("删除缓存");
     }
 }

@@ -986,8 +986,49 @@ spring:
 
 3. 使用注解进行缓存
 
-   - `@Cacheable`
+   - `@Cacheable`：对结果进行缓存
+     
      - `value`：`ehcache.xml`定义的`cache name`
      - `key`：存放于缓存中的键
      - `keyGenerator`：使用配置类中键的自定义生成策略，`key`/`keyGenerator`二选一使用
+     - `condition`：触发条件，只有满足条件的情况下才会加入缓存，默认为空
+     
+     ```java
+     @Cacheable(value = "users", key = "'userid:' + #id", condition = "#id.length() > 10")
+     public EhcacheUser get(String id) {
+         System.out.println("测试是否走缓存");
+         return map.get(id);
+     }
+     @Cacheable(value = "users", keyGenerator = "keyGenerator")
+     public EhcacheUser getById(String id) {
+         System.out.println("测试是否走缓存------");
+         return map.get(id);
+     }
+     ```
+     
+   - `@CachePut`：不仅对结果进行缓存，还会执行方法的代码段
+   
+     ```java
+     @CachePut(value = "users", key = "#id")
+     public EhcacheUser getCachePut(String id) {
+         System.out.println("测试是否走缓存");
+         return map.get(id);
+     }
+     ```
+   
+   - `@CacheEvict`：删除缓存数据
+   
+     - `value`：`ehcache.xml`定义的`cache name`
+     - `key`：存放于缓存中的键
+   
+     - `condition`：触发条件，只有满足条件的情况下才会加入缓存，默认为空
+   
+     - `allEntries`：`true`为删除所有缓存，默认为`false`
+   
+     ```java
+     @CacheEvict(value = "users", key = "#id",allEntries = true)
+     public void getCacheEvict(String id) {
+         System.out.println("删除缓存");
+     }
+     ```
 
