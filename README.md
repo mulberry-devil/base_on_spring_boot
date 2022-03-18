@@ -865,6 +865,129 @@ spring:
       }
       ```
 
+## Ehcache
 
+### 引入依赖
 
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+<!-- https://mvnrepository.com/artifact/net.sf.ehcache/ehcache -->
+<dependency>
+    <groupId>net.sf.ehcache</groupId>
+    <artifactId>ehcache</artifactId>
+    <version>2.10.6</version>
+</dependency>
+```
+
+### Ehcache理解
+
+`Ehcache`类似`Map`集合，`CacheManager`管理着`Cache`，`Cache`又有很多`Element`，每次从`Cache`取出元素就像从`Map`取出一样
+
+### 缓存使用
+
+1. 编写`ehcache.xml`定义`cache name`，类似`map name`，已经定义各种缓存策略
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd">
+       <!--
+          diskStore：为缓存路径，ehcache分为内存和磁盘两级，此属性定义磁盘的缓存位置。参数解释如下：
+          user.home – 用户主目录
+          user.dir  – 用户当前工作目录
+          java.io.tmpdir – 默认临时文件路径
+        -->
+       <diskStore path="java.io.tmpdir/Tmp_EhCache"/>
+       <!--
+          defaultCache：默认缓存策略，当ehcache找不到定义的缓存时，则使用这个缓存策略。只能定义一个。
+        -->
+       <!--
+         name:缓存名称。
+         maxElementsInMemory:缓存最大数目
+         maxElementsOnDisk：硬盘最大缓存个数。
+         eternal:对象是否永久有效，一但设置了，timeout将不起作用。
+         overflowToDisk:是否保存到磁盘，当系统当机时
+         timeToIdleSeconds:设置对象在失效前的允许闲置时间（单位：秒）。仅当eternal=false对象不是永久有效时使用，可选属性，默认值是0，也就是可闲置时间无穷大。
+         timeToLiveSeconds:设置对象在失效前允许存活时间（单位：秒）。最大时间介于创建时间和失效时间之间。仅当eternal=false对象不是永久有效时使用，默认是0.，也就是对象存活时间无穷大。
+         diskPersistent：是否缓存虚拟机重启期数据 Whether the disk store persists between restarts of the Virtual Machine. The default value is false.
+         diskSpoolBufferSizeMB：这个参数设置DiskStore（磁盘缓存）的缓存区大小。默认是30MB。每个Cache都应该有自己的一个缓冲区。
+         diskExpiryThreadIntervalSeconds：磁盘失效线程运行时间间隔，默认是120秒。
+         memoryStoreEvictionPolicy：当达到maxElementsInMemory限制时，Ehcache将会根据指定的策略去清理内存。默认策略是LRU（最近最少使用）。你可以设置为FIFO（先进先出）或是LFU（较少使用）。
+         clearOnFlush：内存数量最大时是否清除。
+         memoryStoreEvictionPolicy:可选策略有：LRU（最近最少使用，默认策略）、FIFO（先进先出）、LFU（最少访问次数）。
+         FIFO，first in first out，这个是大家最熟的，先进先出。
+         LFU， Less Frequently Used，就是上面例子中使用的策略，直白一点就是讲一直以来最少被使用的。如上面所讲，缓存的元素有一个hit属性，hit值最小的将会被清出缓存。
+         LRU，Least Recently Used，最近最少使用的，缓存的元素有一个时间戳，当缓存容量满了，而又需要腾出地方来缓存新的元素的时候，那么现有缓存元素中时间戳离当前时间最远的元素将被清出缓存。
+      -->
+       <defaultCache
+               eternal="false"
+               maxElementsInMemory="10000"
+               maxElementsOnDisk="10000000"
+               timeToIdleSeconds="120"
+               timeToLiveSeconds="120"
+               memoryStoreEvictionPolicy="LRU"/>
+   
+       <cache
+               name="HelloEhcache"
+               eternal="false"
+               maxElementsInMemory="1000"
+               overflowToDisk="false"
+               timeToIdleSeconds="5"
+               timeToLiveSeconds="5"
+               memoryStoreEvictionPolicy="LRU"/>
+   
+   </ehcache>
+   ```
+
+2. 配置类中开启缓存以及配置生成策略
+
+   ```java
+   package com.caston.base_on_spring_boot.ehcache.config;
+   
+   import com.alibaba.fastjson.JSON;
+   import org.springframework.cache.annotation.CachingConfigurerSupport;
+   import org.springframework.cache.annotation.EnableCaching;
+   import org.springframework.cache.interceptor.KeyGenerator;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   import org.springframework.util.DigestUtils;
+   
+   import java.nio.charset.StandardCharsets;
+   
+   @Configuration
+   @EnableCaching
+   public class EhcacheConfig extends CachingConfigurerSupport {
+       @Bean
+       @Override
+       public KeyGenerator keyGenerator() {
+           return (target, method, params) -> {
+               StringBuilder strBuilder = new StringBuilder();
+               strBuilder.append(target.getClass().getName());
+               strBuilder.append(":");
+               strBuilder.append(method.getName());
+               for (Object obj : params) {
+                   if (obj != null) {
+                       strBuilder.append(":");
+                       strBuilder.append(obj.getClass().getName());
+                       strBuilder.append(":");
+                       strBuilder.append(JSON.toJSONString(obj));
+                   }
+               }
+               //log.info("ehcache key str: " + strBuilder.toString());
+               String md5DigestAsHex = DigestUtils.md5DigestAsHex(strBuilder.toString().getBytes(StandardCharsets.UTF_8));
+               return md5DigestAsHex;
+           };
+       }
+   }
+   ```
+
+3. 使用注解进行缓存
+
+   - `@Cacheable`
+     - `value`：`ehcache.xml`定义的`cache name`
+     - `key`：存放于缓存中的键
+     - `keyGenerator`：使用配置类中键的自定义生成策略，`key`/`keyGenerator`二选一使用
 

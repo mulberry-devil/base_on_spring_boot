@@ -1,6 +1,10 @@
 spring:
   application:
     name: base_on_spring_boot # 应用名称
+  cache:
+    type: ehcache
+    ehcache:
+      config: classpath:ehcache.xml
   datasource:
     druid:
       name: base_spring_boot

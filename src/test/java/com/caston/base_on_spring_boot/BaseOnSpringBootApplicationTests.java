@@ -7,16 +7,18 @@ import com.baomidou.mybatisplus.generator.config.GlobalConfig;
 import com.baomidou.mybatisplus.generator.config.PackageConfig;
 import com.baomidou.mybatisplus.generator.config.StrategyConfig;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
+import com.caston.base_on_spring_boot.ehcache.entity.EhcacheUser;
+import com.caston.base_on_spring_boot.ehcache.service.EhcacheService;
 import com.caston.base_on_spring_boot.jjwt.utils.JWTUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Encoders;
-import io.jsonwebtoken.security.Keys;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.Cache;
+import org.springframework.cache.ehcache.EhCacheCacheManager;
 
-import java.security.Key;
+import javax.annotation.Resource;
 import java.util.Date;
 
 @SpringBootTest
@@ -68,5 +70,32 @@ class BaseOnSpringBootApplicationTests {
         mpg.setStrategy(strategy);
         // 6、执行
         mpg.execute();
+    }
+
+    @Test
+    void ehcache() {
+//        CacheManager cacheManager = CacheManager.create();
+//        Cache ehcache = cacheManager.getCache("HelloEhcache");
+//        Element element = new Element("key1", "value1");
+//        ehcache.put(element);
+//        System.out.println(ehcache.get("key1"));
+//        cacheManager.shutdown();
+    }
+
+    @Resource
+    private EhcacheService ehcacheService;
+    @Resource
+    private EhCacheCacheManager cacheManager;
+
+    @Test
+    void getEhcache() {
+        ehcacheService.get("111");
+        System.out.println("---------------------");
+        ehcacheService.get("111");
+        ehcacheService.getById("111");
+        Cache helloEhcache = cacheManager.getCache("users");
+        EhcacheUser ehcacheUser = helloEhcache.get("userid:111", EhcacheUser.class);
+        System.out.println(ehcacheUser);
+        System.out.println(helloEhcache);
     }
 }

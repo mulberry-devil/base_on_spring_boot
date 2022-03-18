@@ -1,0 +1,33 @@
+package com.caston.base_on_spring_boot.ehcache.service;
+
+import com.caston.base_on_spring_boot.ehcache.entity.EhcacheUser;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+public class EhcacheService {
+
+    private static final Map<String, EhcacheUser> map = new HashMap<>();
+
+    static {
+        map.put("111", new EhcacheUser("111", "aaa", 1));
+        map.put("222", new EhcacheUser("222", "bbb", 2));
+        map.put("333", new EhcacheUser("333", "ccc", 3));
+        map.put("444", new EhcacheUser("444", "ddd", 4));
+    }
+
+    @Cacheable(value = "users", key = "'userid:' + #id")
+    public EhcacheUser get(String id) {
+        System.out.println("测试是否走缓存");
+        return map.get(id);
+    }
+
+    @Cacheable(value = "users", keyGenerator = "keyGenerator")
+    public EhcacheUser getById(String id) {
+        System.out.println("测试是否走缓存------");
+        return map.get(id);
+    }
+}
