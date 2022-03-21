@@ -17,12 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
 import java.util.Date;
 
 @SpringBootTest
 class BaseOnSpringBootApplicationTests {
+
     @Test
     void contextLoads() {
         JWTUtil.key();
@@ -97,5 +99,14 @@ class BaseOnSpringBootApplicationTests {
         EhcacheUser ehcacheUser = helloEhcache.get("userid:111", EhcacheUser.class);
         System.out.println(ehcacheUser);
         System.out.println(helloEhcache);
+    }
+
+    @Resource
+    private RedisTemplate redisTemplate;
+
+    @Test
+    void redis(){
+//        redisTemplate.opsForValue().set("key2","value2");
+        System.out.println(redisTemplate.opsForValue().get("key1"));
     }
 }

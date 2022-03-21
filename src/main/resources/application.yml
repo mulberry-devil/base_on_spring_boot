@@ -84,6 +84,16 @@ spring:
               algorithm-expression: user_$->{id % 3}
     props:
       sql-show: true # 打印sql
+  redis:
+    host: 172.23.11.200
+    port: 6379
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 10
+        min-idle: 2
+    timeout: 6000
 server:
   port: 8080 # 应用服务 WEB 访问端口
 
