@@ -79,6 +79,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers("/swagger-ui/**")
                 .antMatchers("/v3/**")
                 .antMatchers("/swagger-resources/**")
-                .antMatchers("/ehcache/**");
+                .antMatchers("/ehcache/**")
+                .antMatchers("/redis/**");
     }
 }

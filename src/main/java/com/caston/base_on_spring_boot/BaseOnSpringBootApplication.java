@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
-@EnableOpenApi
 @SpringBootApplication
 public class BaseOnSpringBootApplication {
 

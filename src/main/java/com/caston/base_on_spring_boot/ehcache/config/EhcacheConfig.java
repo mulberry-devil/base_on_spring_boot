@@ -10,8 +10,8 @@ import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
 
-@Configuration
-@EnableCaching
+//@Configuration
+//@EnableCaching
 public class EhcacheConfig extends CachingConfigurerSupport {
     @Bean
     @Override

@@ -2,9 +2,10 @@ spring:
   application:
     name: base_on_spring_boot # 应用名称
   cache:
-    type: ehcache
-    ehcache:
-      config: classpath:ehcache.xml
+#    type: ehcache
+    type: redis
+#    ehcache:
+#      config: classpath:ehcache.xml
   datasource:
     druid:
       name: base_spring_boot
@@ -89,11 +90,11 @@ spring:
     port: 6379
     jedis:
       pool:
-        max-active: 8
-        max-wait: -1
-        max-idle: 10
-        min-idle: 2
-    timeout: 6000
+        max-active: 8 # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1 # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 10 # 连接池最大连接数（使用负值表示没有限制）
+        min-idle: 2 # 连接池中的最小空闲连接
+    timeout: 6000 # 连接超时时间（毫秒）
 server:
   port: 8080 # 应用服务 WEB 访问端口
 
