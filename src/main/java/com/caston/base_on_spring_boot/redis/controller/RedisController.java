@@ -4,6 +4,7 @@ import com.caston.base_on_spring_boot.redis.service.RedisService;
 import com.caston.base_on_spring_boot.swagger.entity.Hello;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,5 +34,15 @@ public class RedisController {
     @GetMapping("/setName")
     public Hello setName() {
         return (Hello) redisService.selectByPrimaryKey(17);
+    }
+
+    @GetMapping("/getName")
+    public Hello getName() {
+        return (Hello) redisService.select(17);
+    }
+
+    @PostMapping("/send2Redis")
+    public void send2Redis(String message) {
+        redisTemplate.convertAndSend("caston", message);
     }
 }

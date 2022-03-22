@@ -12,4 +12,10 @@ public class RedisService {
         System.out.println("222222222222222222");
         return new Hello("caston", age);
     }
+
+    @Cacheable(cacheNames = "caston", key = "#age")
+    public Hello select(Integer age) {
+        System.out.println("11111111111111111");
+        return new Hello("caston", age);
+    }
 }

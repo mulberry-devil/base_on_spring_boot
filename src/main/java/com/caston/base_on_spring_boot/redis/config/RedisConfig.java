@@ -13,6 +13,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.*;
 
 import java.time.Duration;
@@ -22,6 +23,7 @@ import java.time.Duration;
 public class RedisConfig extends CachingConfigurerSupport {
     /**
      * 序列化键值对
+     *
      * @param factory
      * @return
      */
@@ -55,6 +57,7 @@ public class RedisConfig extends CachingConfigurerSupport {
 
     /**
      * 配置缓存管理器
+     *
      * @param connectionFactory
      * @return
      */
@@ -68,20 +71,45 @@ public class RedisConfig extends CachingConfigurerSupport {
         // om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL); 过期，使用下面替代
         om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
         jacksonSerializer.setObjectMapper(om);
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofSeconds(60)) // 60s缓存失效
-                // 设置key的序列化方式
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                // 设置value的序列化方式
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jacksonSerializer))
-                // 不缓存null值
-                .disableCachingNullValues();
-
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         RedisCacheManager redisCacheManager = RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(config)
+                .cacheDefaults(config(60L, stringRedisSerializer, jacksonSerializer)) // 缓存默认过期时间
+                .withCacheConfiguration("caston", config(120L, stringRedisSerializer, jacksonSerializer)) // 指定组缓存的过期时间
                 .transactionAware()
                 .build();
 
         return redisCacheManager;
+    }
+
+    /**
+     * 将配置抽取出来，为了自定义组缓存过期时间的定义
+     *
+     * @param time
+     * @param stringRedisSerializer
+     * @param jacksonSerializer
+     * @return
+     */
+    public RedisCacheConfiguration config(Long time, StringRedisSerializer stringRedisSerializer, Jackson2JsonRedisSerializer jacksonSerializer) {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofSeconds(time)) // 缓存失效
+                // 设置key的序列化方式
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(stringRedisSerializer))
+                // 设置value的序列化方式
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jacksonSerializer))
+                // 不缓存null值
+                .disableCachingNullValues();
+    }
+
+    /**
+     * 配置redis监听
+     *
+     * @param factory
+     * @return
+     */
+    @Bean
+    public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory factory) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(factory);
+        return container;
     }
 }

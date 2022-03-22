@@ -1092,6 +1092,7 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
    ```java
    /**
     * 配置缓存管理器
+    *
     * @param connectionFactory
     * @return
     */
@@ -1105,19 +1106,31 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
        // om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL); 过期，使用下面替代
        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
        jacksonSerializer.setObjectMapper(om);
-       RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-               .entryTtl(Duration.ofSeconds(60)) // 60s缓存失效
+       StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+       RedisCacheManager redisCacheManager = RedisCacheManager.builder(connectionFactory)
+               .cacheDefaults(config(60L, stringRedisSerializer, jacksonSerializer)) // 缓存默认过期时间
+               .withCacheConfiguration("caston", config(120L, stringRedisSerializer, jacksonSerializer)) // 指定组缓存的过期时间
+               .transactionAware()
+               .build();
+       return redisCacheManager;
+   }
+   /**
+    * 将配置抽取出来，为了自定义组缓存过期时间的定义
+    *
+    * @param time
+    * @param stringRedisSerializer
+    * @param jacksonSerializer
+    * @return
+    */
+   public RedisCacheConfiguration config(Long time, StringRedisSerializer stringRedisSerializer, Jackson2JsonRedisSerializer jacksonSerializer) {
+       return RedisCacheConfiguration.defaultCacheConfig()
+               .entryTtl(Duration.ofSeconds(time)) // 缓存失效
                // 设置key的序列化方式
-               .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+               .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(stringRedisSerializer))
                // 设置value的序列化方式
                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jacksonSerializer))
                // 不缓存null值
                .disableCachingNullValues();
-       RedisCacheManager redisCacheManager = RedisCacheManager.builder(connectionFactory)
-               .cacheDefaults(config)
-               .transactionAware()
-               .build();
-       return redisCacheManager;
    }
    ```
 
@@ -1133,4 +1146,59 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
 
 ### 分布式锁
 
+
+
 ### 订阅发布
+
+1. 监听配置
+
+   ```java
+   /**
+    * 配置redis监听
+    *
+    * @param factory
+    * @return
+    */
+   @Bean
+   public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory factory) {
+       RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+       container.setConnectionFactory(factory);
+       return container;
+   }
+   ```
+
+2. 订阅者（监听类），可写多个，互不影响
+
+   ```java
+   package com.caston.base_on_spring_boot.redis.listener;
+   
+   import org.springframework.data.redis.connection.Message;
+   import org.springframework.data.redis.connection.MessageListener;
+   import org.springframework.data.redis.listener.ChannelTopic;
+   import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+   import org.springframework.stereotype.Component;
+   
+   @Component
+   public class RedisSubListener implements MessageListener {
+   
+       public RedisSubListener(RedisMessageListenerContainer listenerContainer) {
+           listenerContainer.addMessageListener(this, new ChannelTopic("caston")); // 对指定通道进行监听
+           listenerContainer.addMessageListener(this, new ChannelTopic("chen"));
+       }
+   
+       @Override
+       public void onMessage(Message message, byte[] bytes) {
+           System.out.println(getClass().getName() + ":" + "channel:" + new String(bytes) + ":" + message.toString());
+       }
+   }
+   ```
+
+3. 发布者发布
+
+   ```java
+   @PostMapping("/send2Redis")
+   public void send2Redis(String message) {
+       redisTemplate.convertAndSend("caston", message);
+   }
+   ```
+
