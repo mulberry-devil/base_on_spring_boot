@@ -86,10 +86,12 @@ spring:
     props:
       sql-show: true # 打印sql
   redis:
-#    host: 172.23.11.200
-    host: 192.168.56.100
+    host: 172.23.11.200
+#    host: 192.168.56.100
     port: 6379
-    jedis:
+    redisson:
+      file: classpath:redisson.yml
+    lettuce:
       pool:
         max-active: 8 # 连接池最大连接数（使用负值表示没有限制）
         max-wait: -1 # 连接池最大阻塞等待时间（使用负值表示没有限制）

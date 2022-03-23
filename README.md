@@ -1041,6 +1041,28 @@ spring:
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-data-redis</artifactId>
 </dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+    <version>2.11.1</version>
+</dependency>
+```
+
+### `yml`配置
+
+```yaml
+spring:
+  redis:
+	host: 172.23.11.200
+    # host: 192.168.56.100
+    port: 6379
+    lettuce:
+      pool:
+        max-active: 8 # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1 # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 10 # 连接池最大连接数（使用负值表示没有限制）
+        min-idle: 2 # 连接池中的最小空闲连接
+    timeout: 6000 # 连接超时时间（毫秒）
 ```
 
 ### 键值序列化配置
@@ -1144,9 +1166,111 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
    }
    ```
 
-### 分布式锁
+### 分布式锁（使用`redisson`）
 
+1. 引用依赖
 
+   ```xml
+   <dependency>
+       <groupId>org.redisson</groupId>
+       <artifactId>redisson-spring-boot-starter</artifactId>
+       <version>3.13.6</version>
+   </dependency>
+   ```
+
+2. 引用`yml`配置文件
+
+   ```yaml
+   spring:
+     redis:
+       redisson:
+     	  file: classpath:redisson.yml
+   ```
+
+   `redisson.yml`：可配集群
+
+   ```yaml
+   # 单节点配置
+   singleServerConfig:
+     # 连接空闲超时，单位：毫秒
+     idleConnectionTimeout: 10000
+     # 连接超时，单位：毫秒
+     connectTimeout: 10000
+     # 命令等待超时，单位：毫秒
+     timeout: 3000
+     # 命令失败重试次数,如果尝试达到 retryAttempts（命令失败重试次数） 仍然不能将命令发送至某个指定的节点时，将抛出错误。
+     # 如果尝试在此限制之内发送成功，则开始启用 timeout（命令等待超时） 计时。
+     retryAttempts: 3
+     # 命令重试发送时间间隔，单位：毫秒
+     retryInterval: 1500
+     # 密码
+     password:
+     # 单个连接最大订阅数量
+     subscriptionsPerConnection: 5
+     # 客户端名称
+     clientName: myredis
+     # 节点地址
+     address: redis://172.23.11.200:6379
+     # 发布和订阅连接的最小空闲连接数
+     subscriptionConnectionMinimumIdleSize: 1
+     # 发布和订阅连接池大小
+     subscriptionConnectionPoolSize: 50
+     # 最小空闲连接数
+     connectionMinimumIdleSize: 32
+     # 连接池大小
+     connectionPoolSize: 64
+     # 数据库编号
+     database: 0
+     # DNS监测时间间隔，单位：毫秒
+     dnsMonitoringInterval: 5000
+   # 线程池数量,默认值: 当前处理核数量 * 2
+   #threads: 0
+   # Netty线程池数量,默认值: 当前处理核数量 * 2
+   #nettyThreads: 0
+   # 编码
+   codec: !<org.redisson.codec.JsonJacksonCodec> {}
+   # 传输模式
+   transportMode : "NIO"
+   ```
+
+3. 分布式锁案例
+
+   ```java
+   @ApiOperation("测试添加分布式锁后的超卖现象")
+   @GetMapping("/buy")
+   public String buy() {
+       RLock lock = null;
+       try {
+           lock = redissonClient.getLock("lock"); // 获取锁
+           if (lock.tryLock(3, TimeUnit.SECONDS)) { // 重新尝试获取锁
+               RAtomicLong buyBefore = redissonClient.getAtomicLong(KEY);
+               if (Objects.isNull(buyBefore)) {
+                   System.out.println("未找到" + KEY + "的库存信息~");
+                   return "暂未上架～";
+               }
+               long buyBeforeL = buyBefore.get();
+               if (buyBeforeL > 0) {
+                   Long buyAfter = buyBefore.decrementAndGet();
+                   System.out.println("剩余图书==={" + buyAfter + "}");
+                   return "购买成功～";
+               } else {
+                   System.out.println("库存不足～");
+                   return "库存不足～";
+               }
+           } else {
+               System.out.println("获取锁失败～");
+           }
+       } catch (Exception e) {
+           e.printStackTrace();
+       } finally {
+           //如果当前线程保持锁定则解锁
+           if (null != lock && lock.isHeldByCurrentThread()) {
+               lock.unlock(); // 缩放锁
+           }
+       }
+       return "系统错误～";
+   }
+   ```
 
 ### 订阅发布
 
