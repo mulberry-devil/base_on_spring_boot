@@ -72,7 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     /*
-    忽略swagger
+     * 配置忽略路径
      */
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -80,6 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/v3/**")
                 .antMatchers("/swagger-resources/**")
                 .antMatchers("/ehcache/**")
-                .antMatchers("/redis/**");
+                .antMatchers("/redis/**")
+                .antMatchers("/rabbitmq/**");
     }
 }

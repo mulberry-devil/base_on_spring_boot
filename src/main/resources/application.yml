@@ -86,8 +86,8 @@ spring:
     props:
       sql-show: true # 打印sql
   redis:
-    host: 172.23.11.200
-#    host: 192.168.56.100
+#    host: 172.23.11.200
+    host: 192.168.56.100
     port: 6379
     redisson:
       file: classpath:redisson.yml
@@ -98,6 +98,11 @@ spring:
         max-idle: 10 # 连接池最大连接数（使用负值表示没有限制）
         min-idle: 2 # 连接池中的最小空闲连接
     timeout: 6000 # 连接超时时间（毫秒）
+  rabbitmq:
+    addresses: 192.168.56.100
+    port: 5672
+    username: guest
+    password: guest
 server:
   port: 8080 # 应用服务 WEB 访问端口
 
