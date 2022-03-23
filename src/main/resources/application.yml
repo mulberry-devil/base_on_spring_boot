@@ -99,7 +99,7 @@ spring:
         min-idle: 2 # 连接池中的最小空闲连接
     timeout: 6000 # 连接超时时间（毫秒）
   rabbitmq:
-    addresses: 192.168.56.100
+    addresses: localhost
     port: 5672
     username: guest
     password: guest
