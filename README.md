@@ -434,7 +434,7 @@ mpg.execute();
 
 ## ShardingSphere
 
-### 引入依赖
+### 引用依赖
 
 ```xml
 <dependency>
@@ -518,7 +518,7 @@ spring:
 
 ## Spring Security
 
-### 引入依赖
+### 引用依赖
 
 ```xml
 <dependency>
@@ -867,7 +867,7 @@ spring:
 
 ## Ehcache
 
-### 引入依赖
+### 引用依赖
 
 ```xml
 <dependency>
@@ -1034,7 +1034,7 @@ spring:
 
 ## Redis
 
-### 引入依赖
+### 引用依赖
 
 ```xml
 <dependency>
@@ -1325,4 +1325,192 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
        redisTemplate.convertAndSend("caston", message);
    }
    ```
+
+## RabbtMQ
+
+### 引用依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-amqp</artifactId>
+</dependency>
+```
+
+### `yml`文件配置
+
+```yaml
+spring:
+  rabbitmq:
+    addresses: localhost
+    port: 5672
+    username: guest
+    password: guest
+```
+
+### 生产者
+
+```java
+package com.caston.base_on_spring_boot.rabbitmq.controller;
+
+import io.swagger.annotations.ApiOperation;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/rabbitmq")
+public class RabbitController {
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    @ApiOperation(value = "点对点发送", notes = "根据路由键向队列发送消息")
+    @GetMapping("/point2point")
+    public void point2point(String message) {
+        rabbitTemplate.convertAndSend("point", message);
+    }
+
+    @ApiOperation(value = "点对点发送", notes = "根据路由键向队列发送消息但有多个消费者，随机一个消费者去消费信息")
+    @GetMapping("/point2points")
+    public void point2points() {
+        for (int i = 0; i < 10; i++) {
+            rabbitTemplate.convertAndSend("points", "work模型" + i);
+        }
+    }
+
+    @ApiOperation(value = "广播", notes = "与点对点不同的是，广播是将消息发送到交换机，再由交换机发送到交换机绑定的所有队列，和路由键没有关系")
+    @GetMapping("/fanout")
+    public void fanout(String message) {
+        rabbitTemplate.convertAndSend("fanoutExchange", "log", message);
+    }
+
+    @ApiOperation(value = "根据路由键广播", notes = "将消息发送到交换机，再根据路由键由交换机发送到交换机绑定的队列")
+    @GetMapping("/directs")
+    public void directs(String message) {
+        rabbitTemplate.convertAndSend("directsExchange", "directsKey1", message);
+    }
+
+    @ApiOperation(value = "根据路由键规则广播", notes = "将消息发送到交换机，再根据路由键规则由交换机发送到交换机绑定的队列")
+    @GetMapping("/topic")
+    public void topic(String message) {
+        rabbitTemplate.convertAndSend("topicExchange", "topicKey.topic.topic", message);
+    }
+}
+```
+
+### 消费者
+
+```java
+package com.caston.base_on_spring_boot.rabbitmq.customer;
+
+import org.springframework.amqp.rabbit.annotation.*;
+import org.springframework.stereotype.Component;
+
+@Component
+public class Customer {
+    // 点对点模式
+    @RabbitListener(queuesToDeclare = {@Queue("point"), @Queue("points")})
+    @RabbitHandler
+    public void receivel1(String message) {
+        System.out.println("message1：" + message);
+    }
+
+    @RabbitListener(queuesToDeclare = @Queue("points"))
+    @RabbitHandler
+    public void receivel2(String message) {
+        System.out.println("message2：" + message);
+    }
+
+    @RabbitListener(queuesToDeclare = @Queue("points"))
+    @RabbitHandler
+    public void receivel3(String message) {
+        System.out.println("message3：" + message);
+    }
+
+    // =========================================================================================
+
+    // 广播模式
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    value = @Queue, // 创建临时队列
+                    exchange = @Exchange(value = "fanoutExchange", type = "fanout")) // 绑定交换机
+    })
+    @RabbitHandler
+    public void receive1(String message) {
+        System.out.println("message1 = " + message);
+    }
+
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "fanoutExchange", type = "fanout"))
+    })
+    @RabbitHandler
+    public void receive2(String message) {
+        System.out.println("message2 = " + message);
+    }
+
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "directsExchange", type = "direct"),
+                    key = {"directsKey1"})
+    })
+    @RabbitHandler
+    public void receive3(String message) {
+        System.out.println("message3 = " + message);
+    }
+
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "directsExchange", type = "direct"),
+                    key = {"directsKey2"})
+    })
+    @RabbitHandler
+    public void receive4(String message) {
+        System.out.println("message4 = " + message);
+    }
+
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "directsExchange", type = "direct"),
+                    key = {"directsKey1", "directsKey2"})
+    })
+    @RabbitHandler
+    public void receive5(String message) {
+        System.out.println("message5 = " + message);
+    }
+
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "topicExchange", type = "topic"),
+                    key = {"topicKey.*"}) // *为匹配一个单词
+    })
+    @RabbitHandler
+    public void receive6(String message) {
+        System.out.println("message6 = " + message);
+    }
+
+    @RabbitListener(bindings = {
+            @QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "topicExchange", type = "topic"),
+                    key = {"topicKey.#"}) // #为匹配多个单词
+    })
+    @RabbitHandler
+    public void receive7(String message) {
+        System.out.println("message7 = " + message);
+    }
+}
+```
 
