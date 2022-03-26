@@ -104,6 +104,14 @@ spring:
     port: 5672
     username: guest
     password: guest
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+  elasticsearch:
+    rest:
+      uris:
+        - 172.23.11.200:9200
 server:
   port: 8080 # 应用服务 WEB 访问端口
 
