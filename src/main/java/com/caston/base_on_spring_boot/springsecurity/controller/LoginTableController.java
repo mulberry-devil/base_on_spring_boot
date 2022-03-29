@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author caston
@@ -30,15 +30,13 @@ public class LoginTableController {
     @GetMapping("/findAll")
 //    @PreAuthorize("hasAuthority('USER_FINDALL')") // 配置权限，对应权限列表中的名
     public List<LoginTable> findAll() {
-        List<LoginTable> users = loginTableService.list();
-        return users;
+        return loginTableService.list();
     }
 
     @GetMapping("/findAge")
 //    @PreAuthorize("hasRole('ROLE_ADMIN')") // 配置角色，对应权限列表中的名
     public List<LoginTable> findAge() {
-        List<LoginTable> users = loginTableService.list();
-        return users;
+        return loginTableService.list();
     }
 }
 

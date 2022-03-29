@@ -1,6 +1,8 @@
 package com.caston.base_on_spring_boot.springsecurity.config;
 
 import com.caston.base_on_spring_boot.springsecurity.service.security.LoginSecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +24,7 @@ import java.io.IOException;
 @Configuration
 //@EnableGlobalMethodSecurity(prePostEnabled = true) // 开启注解配置权限
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Resource
     private LoginSecurityService loginSecurityService;
@@ -49,13 +52,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(new AuthenticationSuccessHandler() {
                     @Override
                     public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
-                        System.out.println("1111111111111111111111111111111111111111111111");
+                        log.info("进入登陆成功处理器。。。");
                     }
                 }) // 登录成功处理器
                 .failureHandler(new AuthenticationFailureHandler() {
                     @Override
                     public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
-                        System.out.println("22222222222222222222222222222222222222222");
+                        log.info("进入登陆失败处理器。。。");
                     }
                 }) // 登录失败处理器
                 .permitAll()
@@ -64,7 +67,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessHandler(new LogoutSuccessHandler() {
                     @Override
                     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
-                        System.out.println("333333333333333333333333333333333");
+                        log.info("进入退出登录成功处理器。。。");
                     }
                 }) // 退出登录成功处理器
                 .permitAll()

@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiOperation;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/redis")
 public class RedisController {
+    private static final Logger log = LoggerFactory.getLogger(RedisController.class);
 
     @Resource
     private RedisTemplate redisTemplate;
@@ -69,20 +72,20 @@ public class RedisController {
             if (lock.tryLock(3, TimeUnit.SECONDS)) {
                 RAtomicLong buyBefore = redissonClient.getAtomicLong(KEY);
                 if (Objects.isNull(buyBefore)) {
-                    System.out.println("未找到" + KEY + "的库存信息~");
+                    log.info("未找到{}的库存信息。。。", KEY);
                     return "暂未上架～";
                 }
                 long buyBeforeL = buyBefore.get();
                 if (buyBeforeL > 0) {
                     Long buyAfter = buyBefore.decrementAndGet();
-                    System.out.println("剩余图书==={" + buyAfter + "}");
+                    log.info("剩余图书==={}", buyAfter);
                     return "购买成功～";
                 } else {
-                    System.out.println("库存不足～");
+                    log.info("库存不足～");
                     return "库存不足～";
                 }
             } else {
-                System.out.println("获取锁失败～");
+                log.info("获取锁失败～");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,22 +99,22 @@ public class RedisController {
     }
 
     @ApiOperation(value = "测试超卖现象", notes = "超卖：指并发下有实际数量已经没有，但是有线程还是通过了判断条件")
-    @GetMapping("buy1")
+    @GetMapping("/buy1")
     public String buy1() {
         // 获取到当前库存
         String buyBefore = redisTemplate.opsForValue().get(KEY).toString();
         if (Objects.isNull(buyBefore)) {
-            System.out.println("未找到" + KEY + "的库存信息~");
+            log.info("未找到{}的库存信息。。。", KEY);
             return "暂未上架～";
         }
         long buyBeforeL = Long.parseLong(buyBefore);
         if (buyBeforeL > 0) {
             // 对库存进行-1操作
             Long buyAfter = redisTemplate.opsForValue().decrement(KEY);
-            System.out.println("剩余图书==={" + buyAfter + "}");
+            log.info("剩余图书==={}", buyAfter);
             return "购买成功～";
         } else {
-            System.out.println("库存不足～");
+            log.info("库存不足～");
             return "库存不足～";
         }
     }

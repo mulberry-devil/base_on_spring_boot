@@ -2,7 +2,6 @@ package com.caston.base_on_spring_boot.mybatisplus.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.caston.base_on_spring_boot.mybatisplus.entity.User;
 import com.caston.base_on_spring_boot.mybatisplus.service.UserService;
@@ -46,8 +45,7 @@ public class UserController {
 
     @GetMapping("/findAll")
     public List<User> findAll() {
-        List<User> users = userService.list();
-        return users;
+        return userService.list();
     }
 
     @PostMapping("/save")
@@ -57,8 +55,7 @@ public class UserController {
 
     @GetMapping("/queryByName")
     public User queryByName(String name) {
-        User user = userService.getOne(new LambdaQueryWrapper<User>().eq(User::getName, name));
-        return user;
+        return userService.getOne(new LambdaQueryWrapper<User>().eq(User::getName, name));
     }
 }
 

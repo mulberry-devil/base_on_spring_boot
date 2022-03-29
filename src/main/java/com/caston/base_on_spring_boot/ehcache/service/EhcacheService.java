@@ -1,6 +1,8 @@
 package com.caston.base_on_spring_boot.ehcache.service;
 
 import com.caston.base_on_spring_boot.ehcache.entity.EhcacheUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -11,7 +13,7 @@ import java.util.Map;
 
 @Service
 public class EhcacheService {
-
+    private static final Logger log = LoggerFactory.getLogger(EhcacheService.class);
     private static final Map<String, EhcacheUser> map = new HashMap<>();
 
     static {
@@ -23,24 +25,24 @@ public class EhcacheService {
 
     @Cacheable(value = "users", key = "#id")
     public EhcacheUser get(String id) {
-        System.out.println("测试是否走缓存");
+        log.info("测试是否走缓存");
         return map.get(id);
     }
 
     @Cacheable(value = "users", keyGenerator = "keyGenerator")
     public EhcacheUser getById(String id) {
-        System.out.println("测试是否走缓存------");
+        log.info("测试是否走缓存");
         return map.get(id);
     }
 
     @CachePut(value = "users", key = "#id")
     public EhcacheUser getCachePut(String id) {
-        System.out.println("测试是否走缓存");
+        log.info("测试是否走缓存");
         return map.get(id);
     }
 
     @CacheEvict(value = "users", key = "#id")
     public void getCacheEvict(String id) {
-        System.out.println("删除缓存");
+        log.info("删除缓存");
     }
 }
