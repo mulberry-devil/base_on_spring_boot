@@ -16,27 +16,21 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(indexName = "order")
-public class Order implements Serializable {
+public class Elasticsearch implements Serializable {
     @Id
     private Integer id;
 
     @Field(type = FieldType.Keyword)
-    private Long orderNo;
+    private Long num;
 
     @Field(type = FieldType.Integer)
-    private Integer orderType;
-
-    @Field(type = FieldType.Long)
-    private Long orderAmount;
+    private Integer age;
 
     @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_max_word")
-    private String orderDesc;
+    private String desc;
 
     @Field(type = FieldType.Keyword, analyzer = "ik_smart", searchAnalyzer = "ik_max_word")
-    private String username;
-
-    @Field(type = FieldType.Keyword, analyzer = "ik_smart", searchAnalyzer = "ik_max_word")
-    private String userPhone;
+    private String name;
 
     private Map<String, List<String>> highlights;
 }
