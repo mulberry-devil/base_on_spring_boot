@@ -116,7 +116,7 @@ spring:
   elasticsearch:
     rest:
       uris:
-        - ${other.ip}
+        - ${other.ip}:9200
 server:
   port: 8080 # 应用服务 WEB 访问端口
 
