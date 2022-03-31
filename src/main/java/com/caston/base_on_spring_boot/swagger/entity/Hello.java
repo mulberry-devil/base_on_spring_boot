@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @ApiModel("实体类信息")
-public class Hello {
+public class Hello implements Serializable {
     @ApiModelProperty("姓名")
     private String name;
     @ApiModelProperty("年龄")

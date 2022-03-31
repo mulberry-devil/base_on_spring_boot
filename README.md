@@ -1326,7 +1326,7 @@ public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factor
    }
    ```
 
-## RabbtMQ
+## RabbitMQ
 
 ### 引用依赖
 
@@ -1513,4 +1513,433 @@ public class Customer {
     }
 }
 ```
+
+### 异步实践
+
+将与业务无关的代码通过异步请求发送到队列中，监听器监听到后实现逻辑代码
+
+1. 在`properties`定义队列、交换机、路由键名
+
+   ```properties
+   mq.env=local
+   log.user.queue.name=${mq.env}.log.user.queue
+   log.user.exchange.name=${mq.env}.log.user.exchange
+   log.user.routing.key.name=${mq.env}.log.user.routing.key
+   
+   mail.queue.name=${mq.env}.mail.queue
+   mail.exchange.name=${mq.env}.mail.exchange
+   mail.routing.key.name=${mq.env}.mail.routing.key
+   ```
+
+2. 配置文件中创建上述三个
+
+   ```java
+   /**
+    * 单一消费者配置
+    *
+    * @return
+    */
+   @Bean(name = "singleListenerContainer")
+   public SimpleRabbitListenerContainerFactory listenerContainer() {
+       SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+       factory.setConnectionFactory(connectionFactory);
+       // factory.setMessageConverter(new Jackson2JsonMessageConverter());
+       factory.setConcurrentConsumers(1);
+       factory.setMaxConcurrentConsumers(1);
+       factory.setPrefetchCount(1);
+       factory.setTxSize(1);
+       factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
+       return factory;
+   }
+   
+   @Bean
+   public RabbitTemplate rabbitTemplate() {
+       connectionFactory.setPublisherConfirms(true);
+       connectionFactory.setPublisherReturns(true);
+       RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+       rabbitTemplate.setMandatory(true);
+       rabbitTemplate.setConfirmCallback(new RabbitTemplate.ConfirmCallback() {
+           @Override
+           public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+               log.info("消息发送成功:correlationData({}),ack({}),cause({})", correlationData, ack, cause);
+           }
+       });
+       rabbitTemplate.setReturnCallback(new RabbitTemplate.ReturnCallback() {
+           @Override
+           public void returnedMessage(Message message, int replyCode, String replyText, String exchange, String routingKey) {
+               log.info("消息丢失:exchange({}),route({}),replyCode({}),replyText({}),message:{}", exchange, routingKey, replyCode, replyText, message);
+           }
+       });
+       return rabbitTemplate;
+   }
+   
+   /*************************** 异步 ***************************/
+   @Bean
+   public Queue logUserQueue() {
+       return new Queue(environment.getProperty("log.user.queue.name"), true);
+   }
+   @Bean
+   public DirectExchange logUserExchange() {
+       return new DirectExchange(environment.getProperty("log.user.exchange.name"), true, false);
+   }
+   @Bean
+   public Binding logUserBinding() {
+       return BindingBuilder.bind(logUserQueue()).to(logUserExchange()).with(environment.getProperty("log.user.routing.key.name"));
+   }
+   @Bean
+   public Queue mailQueue() {
+       return new Queue(environment.getProperty("mail.queue.name"), true);
+   }
+   @Bean
+   public DirectExchange mailExchange() {
+       return new DirectExchange(environment.getProperty("mail.exchange.name"), true, false);
+   }
+   @Bean
+   public Binding mailBinding() {
+       return BindingBuilder.bind(mailQueue()).to(mailExchange()).with(environment.getProperty("mail.routing.key.name"));
+   }
+   /*************************** 削峰 ***************************/
+   @Bean
+   public Queue userOrderQueue() {
+       return new Queue(environment.getProperty("user.order.queue.name"), true);
+   }
+   ```
+
+3. 监听器
+
+   ```java
+   /*************************** 异步 ***************************/
+   @RabbitListener(queues = "${log.user.queue.name}", containerFactory = "singleListenerContainer")
+   public void logsQueue(@Payload byte[] message) throws IOException {
+       log.info("log监听消费用户日志 监听到消息： {} ", message);
+       Hello hello = objectMapper.readValue(message, Hello.class);
+       log.info("log监听消费用户日志 监听到消息： {} ", hello);
+       // TODO: 真正在这执行写日志操作
+   }
+   @RabbitListener(queues = "${mail.queue.name}", containerFactory = "singleListenerContainer")
+   public void mailQueue(@Payload byte[] message) throws IOException {
+       log.info("mail监听消费用户日志 监听到消息： {} ", message);
+       Hello hello = objectMapper.readValue(message, Hello.class);
+       log.info("mail监听消费用户日志 监听到消息： {} ", hello);
+       // TODO: 真正在这执行发送邮件操作
+   }
+   ```
+
+4. 生产者
+
+   ```java
+   /************************************************ rabbitmq异步实践 ************************************************/
+   @ApiOperation(value = "实践异步记录用户操作日志", notes = "将与业务不相关的代码通过异步请求执行")
+   @GetMapping("/logs")
+   public void logs(Hello hello) throws JsonProcessingException {
+       // TODO: 在这里执行其他逻辑操作
+       // 异步写日志
+       rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+       rabbitTemplate.setExchange(environment.getProperty("log.user.exchange.name"));
+       rabbitTemplate.setRoutingKey(environment.getProperty("log.user.routing.key.name"));
+       Message message = MessageBuilder.withBody(objectMapper.writeValueAsBytes(hello)).setDeliveryMode(MessageDeliveryMode.PERSISTENT).build();
+       message.getMessageProperties().setHeader(AbstractJavaTypeMapper.DEFAULT_CONTENT_CLASSID_FIELD_NAME, MessageProperties.CONTENT_TYPE_JSON);
+       rabbitTemplate.convertAndSend(message);
+   }
+   @ApiOperation(value = "实践异步发送邮件", notes = "将与业务不相关的代码通过异步请求执行")
+   @GetMapping("/mail")
+   public void mail(Hello hello) throws JsonProcessingException {
+       // TODO: 在这里执行其他逻辑操作
+       // 异步发送邮件
+       rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+       rabbitTemplate.setExchange(environment.getProperty("mail.exchange.name"));
+       rabbitTemplate.setRoutingKey(environment.getProperty("mail.routing.key.name"));
+       Message message = MessageBuilder.withBody(objectMapper.writeValueAsBytes(hello)).setDeliveryMode(MessageDeliveryMode.PERSISTENT).build();
+       message.getMessageProperties().setHeader(AbstractJavaTypeMapper.DEFAULT_CONTENT_CLASSID_FIELD_NAME, MessageProperties.CONTENT_TYPE_JSON);
+       rabbitTemplate.convertAndSend(message);
+   }
+   ```
+
+### 削峰实践
+
+将巨大的请求发送到队列中而不是直接请求接口，减少数据库读写锁冲突的发生以及由于接口逻辑的复杂出现线程堵塞而导致应用占据服务器资源飙升
+
+1. 在`properties`定义队列、交换机、路由键名
+
+   ```properties
+   mq.env=local
+   user.order.queue.name=${mq.env}.user.order.queue
+   user.order.exchange.name=${mq.env}.user.order.exchange
+   user.order.routing.key.name=${mq.env}.user.order.routing.key
+   ```
+
+2. 配置文件中创建上述三个
+
+   ```java
+   /*************************** 削峰 ***************************/
+   @Bean
+   public Queue userOrderQueue() {
+       return new Queue(environment.getProperty("user.order.queue.name"), true);
+   }
+   @Bean
+   public TopicExchange userOrderExchange() {
+       return new TopicExchange(environment.getProperty("user.order.exchange.name"), true, false);
+   }
+   @Bean
+   public Binding userOrderBinding() {
+       return BindingBuilder.bind(userOrderQueue()).to(userOrderExchange()).with(environment.getProperty("user.order.routing.key.name"));
+   }
+   @Bean
+   public SimpleMessageListenerContainer listenerContainer(@Qualifier("userOrderQueue") Queue userOrderQueue) {
+       SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+       container.setConnectionFactory(connectionFactory);
+       MessageListenerAdapter adapter = new MessageListenerAdapter();
+       adapter.setMessageConverter(new Jackson2JsonMessageConverter());
+       container.setMessageListener(adapter);
+       // 并发配置
+       container.setConcurrentConsumers(environment.getProperty("spring.rabbitmq.listener.simple.concurrency", Integer.class));
+       container.setMaxConcurrentConsumers(environment.getProperty("spring.rabbitmq.listener.simple.max-concurrency", Integer.class));
+       container.setPrefetchCount(environment.getProperty("spring.rabbitmq.listener.simple.prefetch", Integer.class));
+       /*
+        * 消息确认
+        * 对于某些消息而言，我们有时候需要严格的知道消息是否已经被 consumer 监听消费处理了，即我们有一种消息确认机制来保证我们的消息是否已经真正的被消费处理
+        * 所以消息确认处理机制需要改成手动模式，需要自定义监听器实现 ChannelAwareMessageListener
+        */
+       container.setQueues(userOrderQueue); // 指定队列
+       container.setMessageListener(userOrderListener); // 指定自定义监听器
+       container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+       return container;
+   }
+   ```
+
+3. 监听器实现`ChannelAwareMessageListener`
+
+   ```java
+   package com.caston.base_on_spring_boot.rabbitmq.listener;
+   
+   import com.caston.base_on_spring_boot.rabbitmq.service.RabbitService;
+   import com.fasterxml.jackson.databind.ObjectMapper;
+   import com.rabbitmq.client.Channel;
+   import org.slf4j.Logger;
+   import org.slf4j.LoggerFactory;
+   import org.springframework.amqp.core.Message;
+   import org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener;
+   import org.springframework.stereotype.Component;
+   
+   import javax.annotation.Resource;
+   
+   @Component
+   public class UserOrderListener implements ChannelAwareMessageListener {
+       private static final Logger log = LoggerFactory.getLogger(UserOrderListener.class);
+       @Resource
+       private ObjectMapper objectMapper;
+       @Resource
+       private RabbitService rabbitService;
+   
+       @Override
+       public void onMessage(Message message, Channel channel) throws Exception {
+           long tag = message.getMessageProperties().getDeliveryTag();
+           try {
+               byte[] body = message.getBody();
+               String phone = new String(body, "UTF-8");
+               log.info("监听到抢单手机号：{}", phone);
+               // TODO: 请求到这时去服务层处理业务逻辑
+               rabbitService.manageNum(String.valueOf(phone));
+               // 确认消费
+               channel.basicAck(tag, true);
+           } catch (Exception e) {
+               log.error("用户抢单 发送异常：", e.fillInStackTrace());
+               // 确认消费
+               channel.basicReject(tag, false);
+           }
+       }
+   }
+   ```
+
+4. 模拟高并发的生产者
+
+   ```java
+   /************************************************ rabbitmq削峰实践 ************************************************/
+   private static final int ThreadNum = 5000;
+   private static int phone = 0;
+   @Resource
+   private RabbitService rabbitService;
+   /**
+    * 将抢单请求的手机号信息压入队列，等待排队处理
+    *
+    * @param phone
+    */
+   public void sendRabbitMsg(String phone) {
+       try {
+           rabbitTemplate.setExchange(environment.getProperty("user.order.exchange.name"));
+           rabbitTemplate.setRoutingKey(environment.getProperty("user.order.routing.key.name"));
+           Message message = MessageBuilder.withBody(phone.getBytes("UTF-8")).setDeliveryMode(MessageDeliveryMode.PERSISTENT).build();
+           rabbitTemplate.send(message);
+       } catch (Exception e) {
+           log.error("发送抢单信息入队列 发送异常：phone={}", phone);
+       }
+   }
+   /**
+    * 使用CountDownLatch模拟高并发同时发送5000个请求
+    */
+   public void generateMultiThread() {
+       log.info("开始初始化线程数-----> ");
+       try {
+           CountDownLatch countDownLatch = new CountDownLatch(1);
+           for (int i = 0; i < ThreadNum; i++) {
+               new Thread(new RunThread(countDownLatch)).start();
+           }
+           countDownLatch.countDown();
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
+   }
+   private class RunThread implements Runnable {
+       private final CountDownLatch startLatch;
+       private RunThread(CountDownLatch startLatch) {
+           this.startLatch = startLatch;
+       }
+       @Override
+       public void run() {
+           try {
+               startLatch.await();
+               phone += 1;
+               sendRabbitMsg(String.valueOf(phone)); // 发送消息到队列中
+           } catch (Exception e) {
+               e.printStackTrace();
+           }
+       }
+   }
+   @ApiOperation(value = "实践高并发下的队列请求", notes = "将请求发送到队列中")
+   @GetMapping("/userOrder")
+   public void userOrder() {
+       generateMultiThread();
+   }
+   ```
+
+### 死信队列实践
+
+延迟队列，消息先到死信队列后，保存一段时间，一段时间后再发送到死信交换机绑定的队列中
+
+1. 在`properties`定义（死信、消费者）队列、交换机、路由键名
+
+   ```properties
+   mq.env=local
+   user.order.dead.queue.name=${mq.env}.user.order.dead.queue
+   user.order.dead.exchange.name=${mq.env}.user.order.dead.exchange
+   user.order.dead.routing.key.name=${mq.env}.user.order.dead.routing.key
+   user.order.dead.real.queue.name=${mq.env}.user.order.dead.real.queue
+   user.order.dead.produce.exchange.name=${mq.env}.user.order.dead.produce.exchange
+   user.order.dead.produce.routing.key.name=${mq.env}.user.order.dead.produce.routing.key
+   ```
+
+2. 配置文件中创建上述六个
+
+   ```java
+   /**
+    * 多个消费者配置
+    *
+    * @return
+    */
+   @Bean(name = "multiListenerContainer")
+   public SimpleRabbitListenerContainerFactory multiListenerContainer() {
+       SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+       factoryConfigurer.configure(factory, connectionFactory);
+       factory.setMessageConverter(new Jackson2JsonMessageConverter());
+       factory.setAcknowledgeMode(AcknowledgeMode.NONE);
+       factory.setConcurrentConsumers(environment.getProperty("spring.rabbitmq.listener.simple.concurrency", int.class));
+       factory.setMaxConcurrentConsumers(environment.getProperty("spring.rabbitmq.listener.simple.max-concurrency", int.class));
+       factory.setPrefetchCount(environment.getProperty("spring.rabbitmq.listener.simple.prefetch", int.class));
+       return factory;
+   }
+   @Bean
+   public RabbitTemplate rabbitTemplate() {
+       connectionFactory.setPublisherConfirms(true);
+       connectionFactory.setPublisherReturns(true);
+       RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+       rabbitTemplate.setMandatory(true);
+       rabbitTemplate.setConfirmCallback(new RabbitTemplate.ConfirmCallback() {
+           @Override
+           public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+               log.info("消息发送成功:correlationData({}),ack({}),cause({})", correlationData, ack, cause);
+           }
+       });
+       rabbitTemplate.setReturnCallback(new RabbitTemplate.ReturnCallback() {
+           @Override
+           public void returnedMessage(Message message, int replyCode, String replyText, String exchange, String routingKey) {
+               log.info("消息丢失:exchange({}),route({}),replyCode({}),replyText({}),message:{}", exchange, routingKey, replyCode, replyText, message);
+           }
+       });
+       return rabbitTemplate;
+   }
+   /*************************** 死信队列（延迟队列） ***************************/
+   @Bean
+   public Queue userOrderDeadQueue() {
+       Map<String, Object> args = new HashMap<>();
+       args.put("x-dead-letter-exchange", environment.getProperty("user.order.dead.exchange.name"));
+       args.put("x-dead-letter-routing-key", environment.getProperty("user.order.dead.routing.key.name"));
+       args.put("x-message-ttl", 10000);
+       return new Queue(environment.getProperty("user.order.dead.queue.name"), true, false, false, args);
+   }
+   @Bean
+   public TopicExchange userOrderDeadExchange() {
+       return new TopicExchange(environment.getProperty("user.order.dead.produce.exchange.name"), true, false);
+   }
+   @Bean
+   public Binding userOrderDeadBinding() {
+       return BindingBuilder.bind(userOrderDeadQueue()).to(userOrderDeadExchange()).with(environment.getProperty("user.order.dead.produce.routing.key.name"));
+   }
+   @Bean
+   public Queue userOrderDeadRealQueue() {
+       return new Queue(environment.getProperty("user.order.dead.real.queue.name"), true);
+   }
+   @Bean
+   public TopicExchange userOrderDeadRealExchange() {
+       return new TopicExchange(environment.getProperty("user.order.dead.exchange.name"));
+   }
+   @Bean
+   public Binding userOrderDeadRealBinding() {
+       return BindingBuilder.bind(userOrderDeadRealQueue()).to(userOrderDeadRealExchange()).with(environment.getProperty("user.order.dead.routing.key.name"));
+   }
+   ```
+
+3. 监听器
+
+   ```java
+   /*************************** 死信队列（延迟队列） ***************************/
+   @RabbitListener(queues = "${user.order.dead.real.queue.name}", containerFactory = "multiListenerContainer")
+   public void consumeMessage(@Payload Integer id) {
+       try {
+           log.info("死信队列-用户超时监听信息：{}", id);
+           if ((Integer) RabbitController.MAP.get("status") == 1) {
+               RabbitController.MAP.replace("status", 3);
+               log.info("这里为未支付模拟情况");
+           } else {
+               // TODO: 其他逻辑操作
+               log.info("这里为已支付模拟情况");
+           }
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
+   }
+   ```
+
+4. 生产者
+
+   ```java
+   /************************************************ rabbitmq死信队列实践 ************************************************/
+   public static final Map<String, Object> MAP = new HashMap<>(3);
+   @PostMapping("/deadQueue")
+   public void pushUserOrder() {
+       MAP.put("id", 10);
+       MAP.put("status", 1);
+       rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+       rabbitTemplate.setExchange(environment.getProperty("user.order.dead.produce.exchange.name"));
+       rabbitTemplate.setRoutingKey(environment.getProperty("user.order.dead.produce.routing.key.name"));
+       rabbitTemplate.convertAndSend(10, new MessagePostProcessor() {
+           @Override
+           public Message postProcessMessage(Message message) throws AmqpException {
+               MessageProperties properties = message.getMessageProperties();
+               properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+               properties.setHeader(AbstractJavaTypeMapper.DEFAULT_CONTENT_CLASSID_FIELD_NAME, Integer.class);
+               return message;
+           }
+       });
+   }
+   ```
 
