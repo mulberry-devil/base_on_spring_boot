@@ -3,7 +3,6 @@ package com.caston.base_on_spring_boot.springsecurity.controller;
 
 import com.caston.base_on_spring_boot.springsecurity.entity.LoginTable;
 import com.caston.base_on_spring_boot.springsecurity.service.LoginTableService;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 

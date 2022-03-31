@@ -14,11 +14,11 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String jwt = request.getHeader("admin-token");
-        if (!StringUtils.hasLength(jwt)){
+        if (!StringUtils.hasLength(jwt)) {
             return false;
         }
         Claims claim = JWTUtil.parse(jwt);
-        if (claim==null){
+        if (claim == null) {
             return false;
         }
         String uid = claim.get("UID").toString();
@@ -26,7 +26,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         login.set(uid);
         // 刷新token，避免使用过程中失效
         jwt = JWTUtil.generate(uid);
-        response.setHeader("admin-token",jwt);
+        response.setHeader("admin-token", jwt);
         return true;
     }
 }

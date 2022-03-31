@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Configuration
-//@EnableGlobalMethodSecurity(prePostEnabled = true) // 开启注解配置权限
+// @EnableGlobalMethodSecurity(prePostEnabled = true) // 开启注解配置权限
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 

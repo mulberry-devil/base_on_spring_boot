@@ -168,6 +168,7 @@ public class RabbitController {
     /************************************************ rabbitmq死信队列实践 ************************************************/
     public static final Map<String, Object> MAP = new HashMap<>(3);
 
+    @ApiOperation(value = "实践死信队列延迟接收消息")
     @PostMapping("/deadQueue")
     public void pushUserOrder() {
         MAP.put("id", 10);

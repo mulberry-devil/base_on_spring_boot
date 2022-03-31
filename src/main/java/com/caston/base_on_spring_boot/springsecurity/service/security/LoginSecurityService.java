@@ -39,10 +39,10 @@ public class LoginSecurityService implements UserDetailsService {
             authorities.add(new MySimpleGrantedAuthority("ROLE_" + i.getRoleKeyword()));
             List<Permission> permissionList = permissionMapper.findPermissionByRole(i.getId());
             permissionList.forEach(j -> {
-                authorities.add(new MySimpleGrantedAuthority(j.getPermissionKeyword(),j.getPath()));
+                authorities.add(new MySimpleGrantedAuthority(j.getPermissionKeyword(), j.getPath()));
             });
         });
-//        数据库密码应为经过 new BCryptPasswordEncoder().encode("密码") 编译后的
+        // 数据库密码应为经过 new BCryptPasswordEncoder().encode("密码") 编译后的
         UserDetails userDetails = new User(username, user.getPassword(), authorities);
         return userDetails;
     }

@@ -6,12 +6,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author caston
  * @since 2022-03-15
  */
 public interface UserService extends IService<User> {
-    public Page<User> findPage(int current,int pageSize);
+    public Page<User> findPage(int current, int pageSize);
 }

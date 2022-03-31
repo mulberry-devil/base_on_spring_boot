@@ -24,8 +24,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private UserMapper userMapper;
 
-    public Page<User> findPage(int current,int pageSize){
-        Page<User> page = new Page<>(current,pageSize);
+    public Page<User> findPage(int current, int pageSize) {
+        Page<User> page = new Page<>(current, pageSize);
         Page<User> userPage = userMapper.selectPage(page, new QueryWrapper<>());
         return userPage;
     }
