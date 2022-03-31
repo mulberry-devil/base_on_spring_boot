@@ -1943,3 +1943,104 @@ public class Customer {
    }
    ```
 
+## Elasticsearch
+
+### Mysql和Elasticsearch对比
+
+Elasticsearch是面向文档，一切都是Json，elasticsearch使用的是倒排索引，适用于快速的全文搜索。通过value去查找key。
+
+| Mysql | Elasticsearch |
+| :---: | :-----------: |
+|  表   |     index     |
+|  行   |   documents   |
+| 字段  |    fields     |
+
+### 引用依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+</dependency>
+```
+
+### `yml`文件配置
+
+```yaml
+spring:
+	elasticsearch:
+  		rest:
+    		uris:
+      			- 172.23.11.200
+```
+
+### 配置文件链接
+
+```java
+package com.caston.base_on_spring_boot.elasticsearch.config;
+
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.elasticsearch.client.ClientConfiguration;
+import org.springframework.data.elasticsearch.client.RestClients;
+import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
+
+public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {
+    @Value("${spring.elasticsearch.rest.uris}")
+    private String uris;
+
+    @Override
+    public RestHighLevelClient elasticsearchClient() {
+        ClientConfiguration configuration = ClientConfiguration.builder().connectedTo(uris).build();
+        return RestClients.create(configuration).rest();
+    }
+}
+```
+
+### 简单使用
+
+- 实体类中使用注解定义其中的`document`和`field`
+
+  ```java
+  package com.caston.base_on_spring_boot.elasticsearch.model;
+  
+  import lombok.AllArgsConstructor;
+  import lombok.Data;
+  import lombok.NoArgsConstructor;
+  import org.springframework.data.annotation.Id;
+  import org.springframework.data.elasticsearch.annotations.Document;
+  import org.springframework.data.elasticsearch.annotations.Field;
+  import org.springframework.data.elasticsearch.annotations.FieldType;
+  
+  import java.io.Serializable;
+  import java.util.List;
+  import java.util.Map;
+  
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @Document(indexName = "elasticsearch")
+  public class Elasticsearch implements Serializable {
+      @Id
+      private Integer id;
+  
+      @Field(type = FieldType.Keyword)
+      private Long num;
+  
+      @Field(type = FieldType.Integer)
+      private Integer age;
+  
+      @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_max_word")
+      private String desc;
+  
+      @Field(type = FieldType.Keyword, analyzer = "ik_smart", searchAnalyzer = "ik_max_word")
+      private String name;
+  
+      private Map<String, List<String>> highlights;
+  }
+  ```
+
+- 定义一个继承`ElasticsearchRepository`的类
+
+- 使用`ElasticsearchRestTemplate`或者继承了`ElasticsearchRepository`的类来操作`Elasticsearch`，`ElasticsearchRestTemplate`更多是看作`ElasticsearchRepository`的补充
+

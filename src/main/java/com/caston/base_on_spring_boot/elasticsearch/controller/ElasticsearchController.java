@@ -19,7 +19,7 @@ public class ElasticsearchController {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
-    ElasticsearchService elasticsearchService;
+    private ElasticsearchService elasticsearchService;
 
     /**
      * 创建索引

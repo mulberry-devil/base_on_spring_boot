@@ -15,7 +15,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "order")
+@Document(indexName = "elasticsearch")
 public class Elasticsearch implements Serializable {
     @Id
     private Integer id;
