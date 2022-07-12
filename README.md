@@ -2462,16 +2462,19 @@ String、List、Set、Sort Set、Hash
 
 `synchronized`就是基于进入和退出Monitor对象来实现方法同步/代码块同步和释放的，线程执行`monitorenter`尝试获取对象监视器的所有权，`monitorexit`尝试释放对象监视器的所有权。当线程尝试获取锁执行同步代码时，线程会进入`_EntryList`区，通过`wait()`方法进入`_WaitSet`区，当线程释放Monitor后，`_EntryList`和`_WaitSet`等待的线程都会尝试竞争Monitor。
 
-![1](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2020-06-27_114658.png)
+![本地](.\images\1.jpg)
+![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141052.jpg)
 
 ### 偏向锁、轻量级锁、重量级锁
 
 - 锁只能升级，不能降级
 - 单线程下，偏向锁消耗性能最低，出现其他线程竞争，偏向锁就会升级为轻量级锁，如果其他线程通过一定次数的自旋操作无法获取锁，轻量级锁就会升级为重量级锁
 
-![](.\images\2.jpg)
+![本地](.\images\2.jpg)
+![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141101.jpg)
 
-![3](.\images\3.jpg)
+![本地](.\images\3.jpg)
+![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141103.jpg)
 
 # 并发编程工具
 
@@ -2584,9 +2587,11 @@ String、List、Set、Sort Set、Hash
 
   - 当线程数量等于`maximumPoolSize`，线程池拒绝执行处理程序
 
-    ![](.\images\4.jpg)
+    ![本地](.\images\4.jpg)
+    ![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141110.jpg)
     
-    ![](.\images\微信截图_20220511145942.png)
+    ![本地](.\images\微信截图_20220511145942.png)
+    ![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141201.png)
 
 - 执行实例
 
@@ -2649,6 +2654,7 @@ bean的作用域`scope`
 - `String s4 = new String("3") + new String("3")`：该语句重点是`s4`**不会在常量池中创建引用对象，引用的是堆中的地址**
 
 ![String对象创建的理解图](.\images\v2-20f96416ff06190c2a495c0d9da45ce0_r.jpg)
+![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141222.jpg)
 
 [参考链接](https://www.zhihu.com/question/55994121)
 
@@ -2657,6 +2663,7 @@ bean的作用域`scope`
 ## 锁理解
 
 ![锁升级理解图](.\images\4491294-e3bcefb2bacea224.png)
+![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141250.png)
 
 [参考链接](https://blog.csdn.net/Kirito_j/article/details/79201213)
 
@@ -2665,6 +2672,7 @@ bean的作用域`scope`
 ## JVM内存结构
 
 ![JVM内存结构图](.\images\biyx8kz2je.png)
+![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141322.png)
 
 [参考链接](https://cloud.tencent.com/developer/article/1810426)
 
@@ -2682,7 +2690,8 @@ bean的作用域`scope`
 
 ### 医院项目分析图
 
-![](.\images\zsxl.png)
+![本地](.\images\zsxl.png)
+![网络](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2022-07-12_141351.png)
 
 ## Redis
 
