@@ -2462,7 +2462,7 @@ String、List、Set、Sort Set、Hash
 
 `synchronized`就是基于进入和退出Monitor对象来实现方法同步/代码块同步和释放的，线程执行`monitorenter`尝试获取对象监视器的所有权，`monitorexit`尝试释放对象监视器的所有权。当线程尝试获取锁执行同步代码时，线程会进入`_EntryList`区，通过`wait()`方法进入`_WaitSet`区，当线程释放Monitor后，`_EntryList`和`_WaitSet`等待的线程都会尝试竞争Monitor。
 
-![](.\images\1.jpg)
+![1](https://gitee.com/mulberry_devil/gitee-pages-imgs/raw/master/2020-06-27_114658.png)
 
 ### 偏向锁、轻量级锁、重量级锁
 
