@@ -2277,6 +2277,10 @@ date=formatter.parse(time);
 9. `DispatcherServlet`根据View进行渲染
 10. 将渲染之后的视图响应给客户端
 
+## Mybatis动态sql
+
+`<if />、<choose />、<when />、<otherwise />、<trim />、<where />、<set />、<foreach />、<bind />`
+
 # Spring Boot
 
 - 定义全局异常注解：`@ControllerAdvice`
@@ -2337,6 +2341,19 @@ date=formatter.parse(time);
 三部分使用 “.” 来分隔
 
 # `MySQL`
+
+## InnoDB、MyISAM
+
+- MyISAM 只有表级锁(table-level locking)，而InnoDB 支持行级锁(row-level
+  locking)和表级锁,默认为行级锁。
+-  MyISAM 强调的是性能，每次查询具有原子性,其执行速度比
+  InnoDB类型更快，但是不提供事务支持。但是InnoDB 提供事务支持事务，外部键等高级数据库
+  功能。 具有事务(commit)、回滚(rollback)和崩溃修复能力(crash recovery capabilities)的事务安
+  全(transaction-safe (ACID compliant))型表。
+-  MyISAM不支持外键，而InnoDB支持。
+-  是否支持MVCC ：仅 InnoDB 支持。应对高并发事务, MVCC比单纯的加锁更高效;MVCC只在 READ
+  COMMITTED 和 REPEATABLE READ 两个隔离级别下工作;MVCC可以使用 乐观(optimistic)锁 和 悲
+  观(pessimistic)锁来实现;各数据库中MVCC实现并不统一。
 
 ## `SQL`优化
 
@@ -2487,6 +2504,8 @@ String、List、Set、Sort Set、Hash
 当且仅当A和V相等时，将V修改为B
 
 ## `AQS（AbstractQueuedSynchronizer）`
+
+底层使用模板方法设计模式
 
 ### 独占模式
 
