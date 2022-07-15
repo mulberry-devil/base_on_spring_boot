@@ -46,7 +46,7 @@ public class RabbitmqConfig {
         factory.setConcurrentConsumers(1);
         factory.setMaxConcurrentConsumers(1);
         factory.setPrefetchCount(1);
-        factory.setTxSize(1);
+        factory.setBatchSize(1);
         factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
         return factory;
     }
@@ -70,7 +70,7 @@ public class RabbitmqConfig {
 
     @Bean
     public RabbitTemplate rabbitTemplate() {
-        connectionFactory.setPublisherConfirms(true);
+        connectionFactory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
         connectionFactory.setPublisherReturns(true);
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMandatory(true);
