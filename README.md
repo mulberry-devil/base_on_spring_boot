@@ -1053,7 +1053,7 @@ spring:
 ```yaml
 spring:
   redis:
-	host: 172.23.11.200
+	host: localhost
     # host: 192.168.56.100
     port: 6379
     lettuce:
@@ -1971,7 +1971,7 @@ spring:
 	elasticsearch:
   		rest:
     		uris:
-      			- 172.23.11.200
+      			- localhost
 ```
 
 ### 配置文件链接
