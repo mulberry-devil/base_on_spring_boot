@@ -18,7 +18,7 @@ singleServerConfig:
   # 客户端名称
   clientName: myredis
   # 节点地址
-  address: redis://172.23.11.200:6379
+  address: redis://localhost:6379
 #  address: redis://192.168.56.100:6379
   # 发布和订阅连接的最小空闲连接数
   subscriptionConnectionMinimumIdleSize: 1
