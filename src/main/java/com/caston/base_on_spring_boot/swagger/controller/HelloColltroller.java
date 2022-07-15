@@ -3,6 +3,7 @@ package com.caston.base_on_spring_boot.swagger.controller;
 import com.caston.base_on_spring_boot.swagger.entity.Hello;
 import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Api(tags = "在swagger-ui为该类定义名字")
 @RestController
@@ -38,5 +39,11 @@ public class HelloColltroller {
     })
     public Hello load(@PathVariable String name) {
         return new Hello(name, 1);
+    }
+
+    @ApiOperation("测试文件上传信息")
+    @PostMapping("/importFile")
+    public String importFile(@RequestPart MultipartFile file) {
+        return file.getOriginalFilename();
     }
 }
