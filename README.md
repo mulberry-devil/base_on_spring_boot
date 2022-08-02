@@ -2044,6 +2044,277 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {
 
 - 使用`ElasticsearchRestTemplate`或者继承了`ElasticsearchRepository`的类来操作`Elasticsearch`，`ElasticsearchRestTemplate`更多是看作`ElasticsearchRepository`的补充
 
+## Shiro
+
+### 引用依赖
+
+```xml
+<dependency>
+	<groupId>org.apache.shiro</groupId>
+	<artifactId>shiro-spring</artifactId>
+	<version>1.7.1</version>
+</dependency>
+```
+
+### 简单使用步骤
+
+1. 编写realm，继承`AuthorizingRealm`
+
+   - `doGetAuthorizationInfo`：进行授权的方法
+   - `doGetAuthenticationInfo`：进行认证的方法
+
+   ```java
+   package com.caston.base_on_spring_boot.shiro.realm;
+   
+   import com.caston.base_on_spring_boot.shiro.service.AccountService;
+   import org.apache.shiro.SecurityUtils;
+   import org.apache.shiro.authc.*;
+   import org.apache.shiro.authz.AuthorizationInfo;
+   import org.apache.shiro.authz.SimpleAuthorizationInfo;
+   import org.apache.shiro.realm.AuthorizingRealm;
+   import org.apache.shiro.subject.PrincipalCollection;
+   import org.apache.shiro.subject.Subject;
+   import org.apache.shiro.util.ByteSource;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import com.caston.base_on_spring_boot.shiro.entity.Account;
+   
+   import java.util.Arrays;
+   import java.util.Set;
+   import java.util.stream.Collectors;
+   
+   public class AccountRealm extends AuthorizingRealm {
+       @Autowired
+       private AccountService accountService;
+   
+       /**
+        * 授权
+        *
+        * @param principalCollection
+        * @return
+        */
+       @Override
+       protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+           // 获取当前登录的用户信息
+           Subject subject = SecurityUtils.getSubject();
+           Account account = (Account) subject.getPrincipal();
+           String[] roles = account.getRole().split(",");
+           // 设置角色
+           Set<String> rolesSet = Arrays.stream(roles).collect(Collectors.toSet());
+           SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(rolesSet);
+           String[] perms = account.getPerms().split(",");
+           Set<String> permsSet = Arrays.stream(perms).collect(Collectors.toSet());
+           // 设置权限
+           info.addStringPermissions(permsSet);
+           return info;
+       }
+   
+       /**
+        * 认证
+        *
+        * @param authenticationToken
+        * @return
+        * @throws AuthenticationException
+        */
+       @Override
+       protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+           UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
+           Account account = accountService.lambdaQuery().eq(Account::getUsername, token.getUsername()).one();
+           if (account != null) {
+               /* 参数一：通过用户名查询到的用户信息
+                * 参数二：用户的密码
+                * 参数三：密码的加密策略，bjsxd为自定义的盐
+                * 参数四：realm名
+                */
+               return new SimpleAuthenticationInfo(account, account.getPassword(), ByteSource.Util.bytes("bjsxd"), getName());
+           }
+           return null;
+       }
+   }
+   ```
+
+2. 编写配置类
+
+   ```java
+   package com.caston.base_on_spring_boot.shiro.config;
+   
+   import com.caston.base_on_spring_boot.shiro.filter.ShiroFilter;
+   import com.caston.base_on_spring_boot.shiro.realm.AccountRealm;
+   import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+   import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
+   import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+   import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+   import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+   import org.springframework.beans.factory.annotation.Autowired;
+   import org.springframework.beans.factory.annotation.Qualifier;
+   import org.springframework.context.annotation.Bean;
+   import org.springframework.context.annotation.Configuration;
+   
+   import javax.servlet.Filter;
+   import java.util.HashMap;
+   import java.util.LinkedHashMap;
+   
+   @Configuration
+   public class ShiroConfig {
+   
+       @Bean
+       public AccountRealm accountRealm() {
+           // 注入realm
+           return new AccountRealm();
+       }
+   
+       @Bean
+       public DefaultWebSecurityManager securityManager(@Qualifier("accountRealm") AccountRealm accountRealm) {
+           DefaultWebSecurityManager manager = new DefaultWebSecurityManager();
+           // 创建MD5加密对象
+           HashedCredentialsMatcher matcher = new HashedCredentialsMatcher();
+           matcher.setHashAlgorithmName("md5");
+           matcher.setHashIterations(2);
+           // 将加密对象设置进realm中
+           accountRealm.setCredentialsMatcher(matcher);
+           // 将自定义realm放入manager
+           manager.setRealm(accountRealm);
+           return manager;
+       }
+   
+       @Bean
+       public ShiroFilterFactoryBean shiroFilterFactoryBean(@Qualifier("securityManager") DefaultWebSecurityManager defaultWebSecurityManager) {
+           ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
+           // 将前面的manager放入工厂中
+           factoryBean.setSecurityManager(defaultWebSecurityManager);
+           // 自定义权限过滤器
+           LinkedHashMap<String, Filter> mapFilter = new LinkedHashMap<>();
+           mapFilter.put("rolesOr", new ShiroFilter());
+           factoryBean.setFilters(mapFilter);
+           HashMap<String, String> map = new HashMap<>();
+           map.put("/account/login/**", "anon");// 不用认证就能进入
+           map.put("/swagger-ui/**", "anon");
+           map.put("/swagger-resources/**", "anon");
+           map.put("/v3/**", "anon");
+           map.put("/webjars/**", "anon");
+           map.put("/account/test/**", "rolesOr[manager,user]");// 使用上面自定义的过滤器
+           map.put("/**", "authc");// 需要认证才能进入
+           //  map.put("/account/perms/**","perms[manager]");// 配置什么权限能访问的
+           //  map.put("/account/roles/**","roles[admin]");// 配置什么角色能访问的
+           factoryBean.setFilterChainDefinitionMap(map);
+           // 设置登录页面
+           factoryBean.setLoginUrl("/account/reLogin");
+           // 设置未授权页面
+           factoryBean.setUnauthorizedUrl("/account/unauthc");
+           return factoryBean;
+       }
+   
+       /**
+        * 开启Shiro的注解(如@RequiresRoles,@RequiresPermissions)
+        * 配置以下两个bean(DefaultAdvisorAutoProxyCreator和AuthorizationAttributeSourceAdvisor)即可实现此功能
+        *
+        * @return
+        */
+       @Bean
+       public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
+           DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator = new DefaultAdvisorAutoProxyCreator();
+           advisorAutoProxyCreator.setProxyTargetClass(true);
+           return advisorAutoProxyCreator;
+       }
+   
+       @Bean
+       public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Qualifier("securityManager") DefaultWebSecurityManager defaultWebSecurityManager) {
+           AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
+           authorizationAttributeSourceAdvisor.setSecurityManager(defaultWebSecurityManager);
+           return authorizationAttributeSourceAdvisor;
+       }
+   }
+   ```
+
+3. 认证使用
+
+   - 将用户输入的名和密码封装进`UsernamePasswordToken`中，进行`subject.login`时会进入realm中的认证方法
+
+   ```java
+   	@PostMapping("/login")
+       public String login(String username, String password) {
+           Subject subject = SecurityUtils.getSubject();
+           UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+           try {
+               subject.login(token);
+               Account account = (Account) subject.getPrincipal();
+               subject.getSession().setAttribute("account", account);
+           } catch (Exception e) {
+               e.printStackTrace();
+               return "登录失败";
+           }
+           return "登录成功";
+       }
+   ```
+
+4. 授权使用
+
+   - 使用配置类配置
+
+   - 使用注解（当权限发生重叠时，注解会覆盖配置类）
+
+     ```java
+     	@RequiresPermissions(value = {"manager:all", "user:select"}, logical = Logical.OR)
+         @GetMapping("/perms")
+         public String perms() {
+             return "perms";
+         }
+     
+         @RequiresRoles(value = "user")
+         @GetMapping("/roles")
+         public String roles() {
+             return "roles";
+         }
+     ```
+
+### 拓展
+
+#### 自定义过滤规则
+
+继承`AuthorizationFilter`，编写后在配置类配置并使用
+
+```java
+package com.caston.base_on_spring_boot.shiro.filter;
+
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.web.filter.authz.AuthorizationFilter;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
+public class ShiroFilter extends AuthorizationFilter {
+    @Override
+    protected boolean isAccessAllowed(ServletRequest servletRequest, ServletResponse servletResponse, Object o) throws Exception {
+        Subject subject = getSubject(servletRequest, servletResponse);
+        String[] rolesArray = (String[]) o;
+        //没有角色限制，没有权限访问
+        if (rolesArray == null || rolesArray.length == 0) {
+            return false;
+        }
+        for (String role : rolesArray) {
+            if (subject.hasRole(role)) {
+                // true为放行
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+#### 使用Shiro进行MD5加密
+
+```java
+String password = "123123";
+Md5Hash md5Hash = new Md5Hash(password);
+System.out.println(md5Hash.toHex());
+// 使用加盐后的加密数据
+Md5Hash md5Hash1 = new Md5Hash(password, "bjsxd");
+System.out.println(md5Hash1.toHex());
+// 使用迭代并加盐后的加密数据
+Md5Hash md5Hash2 = new Md5Hash(password, "bjsxd", 2);
+System.out.println(md5Hash2.toHex());
+```
+
 # Java基础
 
 ## 红黑树

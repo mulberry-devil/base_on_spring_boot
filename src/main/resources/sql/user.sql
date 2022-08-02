@@ -55,3 +55,11 @@
 --    PRIMARY KEY (id) USING BTREE,
 --    INDEX role_id(role_id) USING BTREE
 --)ENGINE = InnoDB CHARACTER set = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+--CREATE TABLE if not exists `account` (
+--	`id` INT(11) NOT NULL AUTO_INCREMENT,
+--	`username` VARCHAR(50) NULL DEFAULT NULL,
+--	`password` VARCHAR(50) NULL DEFAULT NULL,
+--	`role` VARCHAR(50) NULL DEFAULT NULL,
+--	`perms` VARCHAR(50) NULL DEFAULT NULL,
+--	PRIMARY KEY (`id`)
+--)
