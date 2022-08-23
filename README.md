@@ -3221,3 +3221,7 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 ## JVM调优
 
 [参考链接](https://blog.csdn.net/zydybaby/article/details/123809968)
+
+## 秒杀系统设计实现
+
+[参考链接](https://cloud.tencent.com/developer/article/1863530)
