@@ -2428,151 +2428,94 @@ System.out.println(md5Hash2.toHex());
 
 # Java基础
 
-## 红黑树
+1. 红黑树
+   - 性质1：每个节点要么是黑色，要么是红色。
+   - 性质2：根节点是黑色。
+   - 性质3：每个叶子节点（NIL）是黑色。
+   - 性质4：每个红色结点的两个子结点一定都是黑色。
+   - 性质5：任意一结点到每个叶子结点的路径都包含数量相同的黑结点。
+2. `ThreadLocal`
+   - `ThreadLocal`用来存储变量副本，键值为当前`ThreadLocal`变量，value为变量副本（即T类型的变量）
+3. `JVM`内容存放
+   - 程序计数器：存放下一条将要执行的指令的地址
+   - 堆：运行时动态申请的内存都在堆上分配，包括new的对象和数组；静态成员变量、常量池等也在堆中
+   - 虚拟机栈：存放局部变量、对象引用、操作数栈、方法出口等；后进先出，被调方法结束后，对应栈区变量等立即销毁
+   - 本地方法栈：主要与虚拟机用到native方法有关
+   - 元空间：存储的是类的元信息
+4. Array List 、Linked List
+   - Array List已经分配好内存地址，所以查询快
+   - Linked List额外实现了Deque接口，所以可以当作双端队列来使用
+   - Array List添加时会涉及扩容，默认容量为10，不足时按1.5倍增长；当给指定位置添加元素时，还会涉及元素的移动
+   - Linked List链表不存在扩容的概念；当给指定位置添加元素时，会先遍历数组找出对应位置再添加
+   - Array 可以包含基本类型和对象类型，Array List 只能包含对象类型。
+   - Array 大小是固定的，Array List 的大小是动态变化的。
+5. Hash Map
+   - Hash Map采用数组+链表+红黑树
+   - 默认容量16，负载因子0.75，默认阈值12
+   - 当前存入数据大于阈值即发生扩容
+   - 链表个数大于8时，且哈希桶数组长度大于64的时候，链表转换为红黑树，如果大于8数组长度小于64时优先进行扩容，变成红黑树的目的是提高搜索速度，高效查询
+   - 当哈希表实际节点数达到容量的75%的时候需要调用resize方法进行扩容；Hash Map的默认容量时16，负载因子为0.75。当Hash Map储存程度达到容量的75%时，将会创建原来大小两倍的数组，并将数组重新hash放入新的bucket中，所以频繁的扩容会消耗性能
+   - 初始化时，容量为0，当第一次添加元素时扩容后为16
+   - 初始化时是先扩容再插入值；之后是先插入值再扩容
+6. Hash Map 的长度为什么是2的幂次方
+   - 取余(%)操作中如果除数是2的幂次则等价于与其除数减一的与(&)操作（也就是说 hash%length==hash&(length-1)的前提是 length 是2的 n 次方；）。并且 采用二进制位操作 &，相对于%能够提高运算效率，这就解释了 Hash Map 的长度为什么是2的幂次方。
+7. Map集合类
 
-- 性质1：每个节点要么是黑色，要么是红色。
-- 性质2：根节点是黑色。
-
-- 性质3：每个叶子节点（NIL）是黑色。
-
-- 性质4：每个红色结点的两个子结点一定都是黑色。
-
-- 性质5：任意一结点到每个叶子结点的路径都包含数量相同的黑结点。
-
-## `ThreadLocal`
-
-`ThreadLocal`用来存储变量副本，键值为当前`ThreadLocal`变量，value为变量副本（即T类型的变量）
-
-## `JVM`内容存放
-
-- 程序计数器：存放下一条将要执行的指令的地址
-- 堆：运行时动态申请的内存都在堆上分配，包括new的对象和数组；静态成员变量、常量池等也在堆中
-- 虚拟机栈：存放局部变量、对象引用、操作数栈、方法出口等；后进先出，被调方法结束后，对应栈区变量等立即销毁
-- 本地方法栈：主要与虚拟机用到native方法有关
-- 元空间：存储的是类的元信息
-
-## Array List 、Linked List
-
-- Array List已经分配好内存地址，所以查询快
-- Linked List额外实现了Deque接口，所以可以当作双端队列来使用
-- Array List添加时会涉及扩容，默认容量为10，不足时按1.5倍增长；当给指定位置添加元素时，还会涉及元素的移动
-- Linked List链表不存在扩容的概念；当给指定位置添加元素时，会先遍历数组找出对应位置再添加
-- Array 可以包含基本类型和对象类型，Array List 只能包含对象类型。
-- Array 大小是固定的，Array List 的大小是动态变化的。
-
-## Hash Map
-
-- Hash Map采用数组+链表+红黑树
-- 默认容量16，负载因子0.75，默认阈值12
-- 当前存入数据大于阈值即发生扩容
-- 链表个数大于8时，且哈希桶数组长度大于64的时候，链表转换为红黑树，如果大于8数组长度小于64时优先进行扩容，变成红黑树的目的是提高搜索速度，高效查询
-- 当哈希表实际节点数达到容量的75%的时候需要调用resize方法进行扩容；Hash Map的默认容量时16，负载因子为0.75。当Hash Map储存程度达到容量的75%时，将会创建原来大小两倍的数组，并将数组重新hash放入新的bucket中，所以频繁的扩容会消耗性能
-- 初始化时，容量为0，当第一次添加元素时扩容后为16
-- 初始化时是先扩容再插入值；之后是先插入值再扩容
-
-## Hash Map 的长度为什么是2的幂次方
-
-取余(%)操作中如果除数是2的幂次则等价于与其除数减一的与(&)操作（也就是说 hash%length==hash&(length-1)的前提是 length 是2的 n 次方；）。并且 采用二进制位操作 &，相对于%能够提高运算效率，这就解释了 Hash Map 的长度为什么是2的幂次方。
-
-## Map集合类
-
-`LinkedHashMap`在遍历的时候会比 `HashMap`慢，不过有种情况例外，当 `HashMap`容量很大，实际数据较少时，遍历起来可能会比 `LinkedHashMap`慢，因为 `LinkedHashMap` 的遍历速度只和实际数据有关，和容量无关，而 `HashMap` 的遍历速度和他的容量有关。当用 Iterator 遍历 `TreeMap` 时，得到的记录是排过序的。
-
-## String 和String Buffer的区别
-
-它们可以储存和操作字符串，即包含多个字符的字符数据。这个String类提供了数值不可改变的字符串。而这个String Buffer类提供的字符串进行修改。当你知道字符数据要改变的时候你就可以使用String Buffer。典型地，你可以使用String Buffer来动态构造字符数据。
-
-## 说出Array List,Vector, Linked List的存储性能和特性
-
-Array List和Vector都是使用数组方式存储数据，此数组元素数大于实际存储的数据以便增加和插入元素，它们都允许直接按序号索引元素，但是插入元素要涉及数组元素移动等内存操作，所以索引数据快而插入数据慢，Vector由于使用了synchronized方法（线程安全），通常性能上较Array List差，而Linked List使用双向链表实现存储，按序号索引数据需要进行前向或后向遍历，但是插入数据时只需要记录本项的前后项即可，所以插入速度较快。
-
-## `Servlet`的生命周期
-
-`Servlet`被服务器实例化后，容器运行其`init`方法，请求到达时运行其service方法，service方法自动派遣运行与请求对应的`doXXX`方法（`doGet`，`doPost`）等，当服务器决定将实例销毁的时候调用其destroy方法。
-
-## Collection 和 Collections的区别
-
-Collection是集合类的上级接口，继承与他的接口主要有Set 和List.
-
-Collections是针对集合类的一个帮助类，他提供一系列静态方法实现对各种集合的搜索、排序、线程安全化等操作。
-
-## Hash Map和Hash table的区别
-
-- Hash Map是Hash table的轻量级实现（非线程安全的实现），他们都完成了Map接口，主要区别在于Hash Map允许空（null）键值（key）,由于非线程安全，效率上可能高于Hash table。
-- Hash Map允许将null作为一个entry的key或者value，而Hash table不允许。
-- 最大的不同是，Hash table的方法是Synchronize的，而Hash Map不是，在多个线程访问Hash table时，不需要自己为它的方法实现同步，而Hash Map 就必须为之提供外同步**（如果是Array List:` List lst = Collections.synchronizedList(new ArrayList());`如果是Hash Map: `Map map = Collections.synchronizedMap(new HashMap());`）**
-
-## sleep() 和 wait() 有什么区别
-
-sleep是线程类（Thread）的方法，导致此线程暂停执行指定时间，给执行机会给其他线程，但是监控状态依然保持，到时后会自动恢复。调用sleep不会释放对象锁。
-wait是Object类的方法，对此对象调用wait方法导致本线程放弃对象锁，进入等待此对象的等待锁定池，只有针对此对象发出notify方法（或`notifyAll`）后本线程才进入对象锁定池准备获得对象锁进入运行状态。
-
-## forward 和redirect的区别
-
-forward是服务器请求资源，服务器直接访问目标地址的URL，把那个URL的响应内容读取过来，然后把这些内容再发给浏览器，浏览器根本不知道服务器发送的内容是从哪儿来的，所以它的地址栏中还是原来的地址。
-redirect就是服务端根据逻辑,发送一个状态码,告诉浏览器重新去请求那个地址，一般来说浏览器会用刚才请求的所有参数重新请求，所以session,request参数都可以获取。
-
-## `short s1 = 1; s1 = s1 + 1;`有什么错? `short s1 = 1; s1 += 1;`有什么错? 
-
-`short s1 = 1; s1 = s1 + 1; `（`s1+1`运算结果是`int`型，需要强制转换类型）
-`short s1 = 1; s1 += 1;`（可以正确编译）
-
-## `Math.round(11.5)`等於多少? `Math.round(-11.5)`等於多少
-
-`Math.round(11.5)==12`
-`Math.round(-11.5)==-11`
-round方法返回与参数最接近的长整数，参数加1/2后求其floor.
-
-## 常见到的runtime exception
-
-`ArithmeticException, ArrayStoreException, BufferOverflowException, BufferUnderflowException, CannotRedoException, CannotUndoException, ClassCastException, CMMException, ConcurrentModificationException, DOMException, EmptyStackException, IllegalArgumentException, IllegalMonitorStateException, IllegalPathStateException, IllegalStateException, ImagingOpException, IndexOutOfBoundsException, MissingResourceException, NegativeArraySizeException, NoSuchElementException, NullPointerException, ProfileDataException, ProviderException, RasterFormatException, SecurityException, SystemException, UndeclaredThrowableException, UnmodifiableSetException, UnsupportedOperationException`
-
-## 接口是否可继承接口? 抽象类是否可实现(implements)接口? 抽象类是否可继承实体类(concrete class)
-
-接口可以继承接口。抽象类可以实现(implements)接口，抽象类是否可继承实体类，但前提是实体类必须有明确的构造函数。
-
-## 数据连接池的工作机制是什么
-
-`J2EE`服务器启动时会建立一定数量的池连接，并一直维持不少于此数目的池连接。客户端程序需要连接时，池驱动程序会返回一个未使用的池连接并将其表记为忙。如果当前没有空闲连接，池驱动程序就新建一定数量的连接，新建连接的数量有配置参数决定。当使用的池连接调用完成后，池驱动程序将此连接表记为空闲，其他调用就可以使用这个连接。
-
-## 是否可以继承String类
-
-String类是final类故不可以继承。
-
-## `swtich`是否能作用在byte上，是否能作用在long上，是否能作用在String上
-
-`switch（expr1）`中，`expr1`是一个整数表达式。因此传递给 switch 和 case 语句的参数应该是 `int`、 short、 char 或者 byte。long,string 都不能作用于`swtich`。
-
-## XML文档定义有几种形式？它们之间有何本质区别？解析XML文档有哪几种方式
-
-- 两种形式 `dtd schema`
-
-- 本质区别:schema本身是`xml`的，可以被XML解析器解析(这也是从`DTD`上发展schema的根本目的)
-- 有`DOM,SAX,STAX`等 
-    - DOM:处理大型文件时其性能下降的非常厉害。这个问题是由DOM的树结构所造成的，这种结构占用的内存较多，而且DOM必须在解析文件之前把整个文档装入内存,适合对XML的随机访问
-    - SAX:不现于DOM,SAX是事件驱动型的XML解析方式。它顺序读取XML文件，不需要一次全部装载整个文件。当遇到像文件开头，文档结束，或者标签开头与标签结束时，它会触发一个事件，用户通过在其回调事件中写入处理代码来处理XML文件，适合对XML的顺序访问 
-    - `STAX:Streaming API for XML (StAX)`
-
-## 什么是Java序列化，如何实现Java序列化
-
-序列化就是一种用来处理对象流的机制，所谓对象流也就是将对象的内容进行流化。可以对流化后的对象进行读写操作，也可将流化后的对象传输于网络之间。序列化是为了解决在对对象流进行读写操作时所引发的问题。
-序列化的实现：将需要被序列化的类实现`Serializable`接口，该接口没有需要实现的方法，`implements Serializable`只是为了标注该对象是可被序列化的，然后使用一个输出流(如：`FileOutputStream`)来构造一个`ObjectOutputStream`(对象流)对象，接着，使用`ObjectOutputStream`对象的`writeObject`(`Object obj`)方法就可以将参数为`obj`的对象写出(即保存其状态)，要恢复的话则用输入流。
-
-## 写clone()方法时，通常都有一行代码，是什么
-
-Clone 有缺省行为，`super.clone()`;他负责产生正确大小的空间，并逐位复制。
-
-## List、Map、Set三个接口，存取元素时，各有什么特点
-
-List 以特定次序来持有元素，可有重复元素。Set 无法拥有重复元素,内部排序。Map 保存key-value值，value可多值
-
-## 数组集合互转
-
-数组转集合：`aslist`
-
-集合转数组：`toArray`
-
-## 字符串转时间格式
+   - `LinkedHashMap`在遍历的时候会比 `HashMap`慢，不过有种情况例外，当 `HashMap`容量很大，实际数据较少时，遍历起来可能会比 `LinkedHashMap`慢，因为 `LinkedHashMap` 的遍历速度只和实际数据有关，和容量无关，而 `HashMap` 的遍历速度和他的容量有关。当用 Iterator 遍历 `TreeMap` 时，得到的记录是排过序的。
+8. String 和String Buffer的区别
+   - 它们可以储存和操作字符串，即包含多个字符的字符数据。这个String类提供了数值不可改变的字符串。而这个String Buffer类提供的字符串进行修改。当你知道字符数据要改变的时候你就可以使用String Buffer。典型地，你可以使用String Buffer来动态构造字符数据。
+9. 说出Array List,Vector, Linked List的存储性能和特性
+   - Array List和Vector都是使用数组方式存储数据，此数组元素数大于实际存储的数据以便增加和插入元素，它们都允许直接按序号索引元素，但是插入元素要涉及数组元素移动等内存操作，所以索引数据快而插入数据慢，Vector由于使用了synchronized方法（线程安全），通常性能上较Array List差，而Linked List使用双向链表实现存储，按序号索引数据需要进行前向或后向遍历，但是插入数据时只需要记录本项的前后项即可，所以插入速度较快。
+10. `Servlet`的生命周期
+    - `Servlet`被服务器实例化后，容器运行其`init`方法，请求到达时运行其service方法，service方法自动派遣运行与请求对应的`doXXX`方法（`doGet`，`doPost`）等，当服务器决定将实例销毁的时候调用其destroy方法。
+11. Collection 和 Collections的区别
+    - Collection是集合类的上级接口，继承与他的接口主要有Set 和List.
+    - Collections是针对集合类的一个帮助类，他提供一系列静态方法实现对各种集合的搜索、排序、线程安全化等操作。
+12. Hash Map和Hash table的区别
+    - Hash Map是Hash table的轻量级实现（非线程安全的实现），他们都完成了Map接口，主要区别在于Hash Map允许空（null）键值（key）,由于非线程安全，效率上可能高于Hash table。
+    - Hash Map允许将null作为一个entry的key或者value，而Hash table不允许。
+    - 最大的不同是，Hash table的方法是Synchronize的，而Hash Map不是，在多个线程访问Hash table时，不需要自己为它的方法实现同步，而Hash Map 就必须为之提供外同步**（如果是Array List:` List lst = Collections.synchronizedList(new ArrayList());`如果是Hash Map: `Map map = Collections.synchronizedMap(new HashMap());`）**
+13. sleep() 和 wait() 有什么区别
+    - sleep是线程类（Thread）的方法，导致此线程暂停执行指定时间，给执行机会给其他线程，但是监控状态依然保持，到时后会自动恢复。调用sleep不会释放对象锁。
+    - wait是Object类的方法，对此对象调用wait方法导致本线程放弃对象锁，进入等待此对象的等待锁定池，只有针对此对象发出notify方法（或`notifyAll`）后本线程才进入对象锁定池准备获得对象锁进入运行状态。
+14. forward 和redirect的区别
+    - forward是服务器请求资源，服务器直接访问目标地址的URL，把那个URL的响应内容读取过来，然后把这些内容再发给浏览器，浏览器根本不知道服务器发送的内容是从哪儿来的，所以它的地址栏中还是原来的地址。
+    - redirect就是服务端根据逻辑,发送一个状态码,告诉浏览器重新去请求那个地址，一般来说浏览器会用刚才请求的所有参数重新请求，所以session,request参数都可以获取。
+15. `short s1 = 1; s1 = s1 + 1;`有什么错? `short s1 = 1; s1 += 1;`有什么错?
+    - `short s1 = 1; s1 = s1 + 1; `（`s1+1`运算结果是`int`型，需要强制转换类型）
+    - `short s1 = 1; s1 += 1;`（可以正确编译）
+16. `Math.round(11.5)`等於多少? `Math.round(-11.5)`等於多少
+    - `Math.round(11.5)==12`
+    - `Math.round(-11.5)==-11`
+    - round方法返回与参数最接近的长整数，参数加1/2后求其floor.
+17. 常见到的runtime exception
+    - `ArithmeticException, ArrayStoreException, BufferOverflowException, BufferUnderflowException, CannotRedoException, CannotUndoException, ClassCastException, CMMException, ConcurrentModificationException, DOMException, EmptyStackException, IllegalArgumentException, IllegalMonitorStateException, IllegalPathStateException, IllegalStateException, ImagingOpException, IndexOutOfBoundsException, MissingResourceException, NegativeArraySizeException, NoSuchElementException, NullPointerException, ProfileDataException, ProviderException, RasterFormatException, SecurityException, SystemException, UndeclaredThrowableException, UnmodifiableSetException, UnsupportedOperationException`
+18. 接口是否可继承接口? 抽象类是否可实现(implements)接口? 抽象类是否可继承实体类(concrete class)
+    - 接口可以继承接口。抽象类可以实现(implements)接口，抽象类是否可继承实体类，但前提是实体类必须有明确的构造函数。
+19. 数据连接池的工作机制是什么
+    - `J2EE`服务器启动时会建立一定数量的池连接，并一直维持不少于此数目的池连接。客户端程序需要连接时，池驱动程序会返回一个未使用的池连接并将其表记为忙。如果当前没有空闲连接，池驱动程序就新建一定数量的连接，新建连接的数量有配置参数决定。当使用的池连接调用完成后，池驱动程序将此连接表记为空闲，其他调用就可以使用这个连接。
+20. 是否可以继承String类
+    - String类是final类故不可以继承。
+21. `swtich`是否能作用在byte上，是否能作用在long上，是否能作用在String上
+    - `switch（expr1）`中，`expr1`是一个整数表达式。因此传递给 switch 和 case 语句的参数应该是 `int`、 short、 char 或者 byte。long不能作用于`swtich`。
+22. XML文档定义有几种形式？它们之间有何本质区别？解析XML文档有哪几种方式
+    - 两种形式 `dtd schema`
+    - 本质区别:schema本身是`xml`的，可以被XML解析器解析(这也是从`DTD`上发展schema的根本目的)
+    - 有`DOM,SAX,STAX`等 
+      - DOM:处理大型文件时其性能下降的非常厉害。这个问题是由DOM的树结构所造成的，这种结构占用的内存较多，而且DOM必须在解析文件之前把整个文档装入内存,适合对XML的随机访问
+      - SAX:不现于DOM,SAX是事件驱动型的XML解析方式。它顺序读取XML文件，不需要一次全部装载整个文件。当遇到像文件开头，文档结束，或者标签开头与标签结束时，它会触发一个事件，用户通过在其回调事件中写入处理代码来处理XML文件，适合对XML的顺序访问 
+      - `STAX:Streaming API for XML (StAX)`
+23. 什么是Java序列化，如何实现Java序列化
+    - 序列化就是一种用来处理对象流的机制，所谓对象流也就是将对象的内容进行流化。可以对流化后的对象进行读写操作，也可将流化后的对象传输于网络之间。序列化是为了解决在对对象流进行读写操作时所引发的问题。
+    - 序列化的实现：将需要被序列化的类实现`Serializable`接口，该接口没有需要实现的方法，`implements Serializable`只是为了标注该对象是可被序列化的，然后使用一个输出流(如：`FileOutputStream`)来构造一个`ObjectOutputStream`(对象流)对象，接着，使用`ObjectOutputStream`对象的`writeObject`(`Object obj`)方法就可以将参数为`obj`的对象写出(即保存其状态)，要恢复的话则用输入流。
+24. 写clone()方法时，通常都有一行代码，是什么
+    - Clone 有缺省行为，`super.clone()`;他负责产生正确大小的空间，并逐位复制。
+25. List、Map、Set三个接口，存取元素时，各有什么特点
+    - List 以特定次序来持有元素，可有重复元素。Set 无法拥有重复元素,内部排序。Map 保存key-value值，value可多值
+26. 数组集合互转
+    - 数组转集合：`aslist`
+    - 集合转数组：`toArray`
+27. 字符串转时间格式
 
 ```java
 String time="2010-11-20 11:10:10";
@@ -2581,39 +2524,33 @@ SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 date=formatter.parse(time);
 ```
 
-## Java数据库链接池
-
-- `C3p0`: 实现数据源和`JNDI`绑定，支持`JDBC3`规范和`JDBC2`的标准扩展。Hibernate、Spring使用。单线程，性能较差，适用于小型系统，代码`600KB`左右。
-- `DBCP (Database Connection Pool)`：Apache的， commons-pool对象池机制，Tomcat使用。单独使用`dbcp`需要3个包：`common-dbcp.jar,common-pool.jar,common-collections.jar`，预先将数据库连接放内存中，建立数据库连接时，直接到连接池中申请，用完放回。单线程，并发量低，性能不好，适用于小型系统。
-- `Tomcat Jdbc Pool`：Tomcat在7.0以前都是使用，单线程，保证线程安全会锁整个连接池，性能差，超过60个类复杂。Tomcat从7.0开始叫做`Tomcat jdbc pool`，基于Tomcat JULI，使用Tomcat日志框架，完全兼容`dbcp`，异步方式获取连接，支持高并发应用环境，核心文件8个，支持`JMX`，支持`XA Connection`。
-- `BoneCP`：高效、免费。设计提高性能，速度最快，高度可扩展：集成Hibernate和`DataNucleus`中。连接状态切换的回调机制；允许直接访问连接；自动化重置能力；`JMX`支持；懒加载能力；支持XML和属性文件配置方式；较好的Java代码组织，100%单元测试分支代码覆盖率；代码`40KB`左右。
-- `Druid`：Java中最好，强大监控和扩展，可用于大数据实时查询和分析的高容错、高性能分布式系统，尤其是当发生代码部署、机器故障以及其他产品系统遇到宕机等情况时，100%正常运行。主要特色：分析监控；交互式查询快；高可用；可扩展；
-
-## object方法
-
-`getClass`、`hashCode`、`equals`、`clone`、`toString`、`notify`、`notifyAll`、`wait`、`finalize`
-
-## `String`、`StringBuffer`、`StringBuilder`
-
-- `String`：字符串常量；`StringBuffer/StringBuilder`：字符串变量
-
-## 遍历Map
+28. Java数据库链接池
+    - `C3p0`: 实现数据源和`JNDI`绑定，支持`JDBC3`规范和`JDBC2`的标准扩展。Hibernate、Spring使用。单线程，性能较差，适用于小型系统，代码`600KB`左右。
+    - `DBCP (Database Connection Pool)`：Apache的， commons-pool对象池机制，Tomcat使用。单独使用`dbcp`需要3个包：`common-dbcp.jar,common-pool.jar,common-collections.jar`，预先将数据库连接放内存中，建立数据库连接时，直接到连接池中申请，用完放回。单线程，并发量低，性能不好，适用于小型系统。
+    - `Tomcat Jdbc Pool`：Tomcat在7.0以前都是使用，单线程，保证线程安全会锁整个连接池，性能差，超过60个类复杂。Tomcat从7.0开始叫做`Tomcat jdbc pool`，基于Tomcat JULI，使用Tomcat日志框架，完全兼容`dbcp`，异步方式获取连接，支持高并发应用环境，核心文件8个，支持`JMX`，支持`XA Connection`。
+    - `BoneCP`：高效、免费。设计提高性能，速度最快，高度可扩展：集成Hibernate和`DataNucleus`中。连接状态切换的回调机制；允许直接访问连接；自动化重置能力；`JMX`支持；懒加载能力；支持XML和属性文件配置方式；较好的Java代码组织，100%单元测试分支代码覆盖率；代码`40KB`左右。
+    - `Druid`：Java中最好，强大监控和扩展，可用于大数据实时查询和分析的高容错、高性能分布式系统，尤其是当发生代码部署、机器故障以及其他产品系统遇到宕机等情况时，100%正常运行。主要特色：分析监控；交互式查询快；高可用；可扩展；
+29. object方法
+    - `getClass`、`hashCode`、`equals`、`clone`、`toString`、`notify`、`notifyAll`、`wait`、`finalize`
+30. `String`、`StringBuffer`、`StringBuilder`
+    - `String`：字符串常量；`StringBuffer/StringBuilder`：字符串变量
+31. 遍历Map
 
 [网址](https://www.cnblogs.com/blest-future/p/4628871.html)
 
-## 线程创建的区别
+32. 线程创建的区别
 
 [网址](https://www.cnblogs.com/htyj/p/10848646.html)
 
-## List中自定义对象怎么去重
+33. List中自定义对象怎么去重
 
 [网址](https://blog.csdn.net/hjfcgt123/article/details/84781552)
 
-## `ArrayList`与`LinkList`哪个占用内存多
+34. `ArrayList`与`LinkList`哪个占用内存多
 
 [网址](https://zhuanlan.zhihu.com/p/166686856)
 
-## Map是否有序
+35. Map是否有序
 
 [网址](https://www.cnblogs.com/chen-lhx/p/8432422.html)
 
@@ -2646,7 +2583,7 @@ date=formatter.parse(time);
 
 `ORM`框架是一种数据持久化技术，即在对象模型和关系型数据库之间建立起对应关系，并且提供一种机制，可通过 `JavaBean` 对象操作数据库表中的数据
 
-## Spring流程
+## SpringMVC流程
 
 1. 客户请求被`DispatcherServlet`接收
 2. `DispatcherServlet`根据`HandlerMapping`映射到`Handler`
@@ -2662,6 +2599,33 @@ date=formatter.parse(time);
 ## Mybatis动态sql
 
 `<if />、<choose />、<when />、<otherwise />、<trim />、<where />、<set />、<foreach />、<bind />`
+
+## Spring中的bean
+
+bean的作用域`scope`
+
+- singleton，单例，表示通过Spring容器获取的对象是唯一的，该值默认值，在该模式下，只要加载IoC容器，无论是否取出bean，配置文件中的bean都会被创建
+- prototype，原型，表示通过Spring容器获取的对象是不同的。在该模式下，如果不取bean，则不会创建对象，取一次bean就会创建一个对象
+- request，请求，表示在一次HTTP请求内有效
+- session，会话，表示在一个用户会话内有效
+
+## Spring工厂方法
+
+创建bean的两种方式
+
+- 静态工厂方法
+- 实力工厂方法
+
+区别：静态工厂方法创建对象时不需要去实例化工厂对象
+
+## `IoC`和`AOP`实现
+
+`IoC`：结合反射机制动态动态创建对象并赋值，将创建好的bean存入Map集合，key就是bean中的id，value就是bean对象
+
+`AOP`：使用代理模式加反射机制实现
+
+- 把一些非业务逻辑的代码从业务中抽离出来，以非侵入的方式与原方法进行协同，这样可以使得原方法更专注于业务逻辑
+- 日志场景、统计场景（方法调用次数，异常次数）、安防场景（熔断，限流和降级）、性能场景（缓存，超时控制）
 
 # Spring Boot
 
@@ -3009,35 +2973,6 @@ ThreadPoolExecutor executor = null;
         }
 ```
 
-# 框架
-
-## Spring中的bean
-
-bean的作用域`scope`
-
-- singleton，单例，表示通过Spring容器获取的对象是唯一的，该值默认值，在该模式下，只要加载IoC容器，无论是否取出bean，配置文件中的bean都会被创建
-- prototype，原型，表示通过Spring容器获取的对象是不同的。在该模式下，如果不取bean，则不会创建对象，取一次bean就会创建一个对象
-- request，请求，表示在一次HTTP请求内有效
-- session，会话，表示在一个用户会话内有效
-
-## Spring工厂方法
-
-创建bean的两种方式
-
-- 静态工厂方法
-- 实力工厂方法
-
-区别：静态工厂方法创建对象时不需要去实例化工厂对象
-
-## `IoC`和`AOP`实现
-
-`IoC`：结合反射机制动态动态创建对象并赋值，将创建好的bean存入Map集合，key就是bean中的id，value就是bean对象
-
-`AOP`：使用代理模式加反射机制实现
-
-- 把一些非业务逻辑的代码从业务中抽离出来，以非侵入的方式与原方法进行协同，这样可以使得原方法更专注于业务逻辑
-- 日志场景、统计场景（方法调用次数，异常次数）、安防场景（熔断，限流和降级）、性能场景（缓存，超时控制）
-
 # Interview And My Understand(IAMU)
 
 ## 书籍阅读PDF
@@ -3135,11 +3070,11 @@ bean的作用域`scope`
 
 ## Mysql
 
-## explain分析
+### explain分析
 
 [参考链接](https://blog.csdn.net/cczxcce/article/details/121440270)
 
-## 分库分表
+### 分库分表
 
 一般数据量达到500万或者2G时进行分表，数据库成为性能瓶颈进行分库
 
