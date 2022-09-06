@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.generator.config.GlobalConfig;
 import com.baomidou.mybatisplus.generator.config.PackageConfig;
 import com.baomidou.mybatisplus.generator.config.StrategyConfig;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
+import com.caston.base_on_spring_boot.designpatterns.singleton.SingletonEnum;
 import com.caston.base_on_spring_boot.ehcache.entity.EhcacheUser;
 import com.caston.base_on_spring_boot.ehcache.service.EhcacheService;
 import com.caston.base_on_spring_boot.jjwt.utils.JWTUtil;
@@ -22,7 +23,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import javax.annotation.Resource;
 import java.util.Date;
 
-@SpringBootTest
+// @SpringBootTest
 class BaseOnSpringBootApplicationTests {
 
     @Test
@@ -105,8 +106,35 @@ class BaseOnSpringBootApplicationTests {
     private RedisTemplate redisTemplate;
 
     @Test
-    void redis(){
+    void redis() {
 //        redisTemplate.opsForValue().set("key2","value2");
         System.out.println(redisTemplate.opsForValue().get("key1"));
+    }
+
+    // 7,1,5,3,6,4
+    @Test
+    int maxProfit(int[] prices) {
+        int count = 0;
+        if (prices.length == 1) return count;
+        int left = 0, right = 1;
+        for (; right < prices.length; right++) {
+            if (prices[left] < prices[right]) {
+                if (prices[right] < prices[right - 1]) {
+                    count = prices[right - 1] + prices[left];
+                    left = right;
+                }
+                continue;
+            } else {
+                left = right;
+            }
+        }
+        return count + prices[left] - prices[right];
+    }
+
+    @Test
+    void test() {
+        SingletonEnum instance = SingletonEnum.INSTANCE;
+        SingletonEnum instance1 = SingletonEnum.INSTANCE;
+        System.out.println(instance == instance1);
     }
 }
