@@ -3264,15 +3264,13 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 ### 工厂模式
 
-[相关链接](https://blog.csdn.net/qq_46015650/article/details/123799556)
-
 将对象实例的生成细节不对外暴露，做到生产和使用分离
 
-1. 简单工厂模式
+1. 简单工厂模式 -> `com/caston/base_on_spring_boot/designpatterns/factory/simplefactory`
 
-2. 工厂方法模式
+2. 工厂方法模式 -> `com/caston/base_on_spring_boot/designpatterns/factory/factorymethod`
 
-3. 抽象工厂模式
+3. 抽象工厂模式 -> `com/caston/base_on_spring_boot/designpatterns/factory/abstractfactory`
 
-   
+[相关链接](https://blog.csdn.net/qq_46015650/article/details/123799556)
 
