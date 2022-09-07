@@ -2659,6 +2659,14 @@ bean的作用域`scope`
 - `@Environment`
 - `@ConfifigurationProperties`
 
+## Spring Boot自动装配原理
+
+在`@SpringBootApplication`中的`@EnableAutoConfiguration`中的`@Import({AutoConfigurationImportSelector.class})`
+
+首先去读取`autoconfigure.jar`下的`spring.factories`，将`autoconfigure`的值封装进一个list中，再去重排序，根据`spring-autoconfigure-metadata.properties`过滤，最后通过反射实例化对象并放入容器中管理
+
+[相关链接](https://www.jianshu.com/p/88eafeb3f351?u_atoken=fa6877b9-f73f-4a28-98e8-acde99f2e32d&u_asession=01fWXKeWXipjBLrNwd5_cWWRuk6-XgTTF8ehGBhCYxPa_4OsryH0VsQDziJMZXJl1LX0KNBwm7Lovlpxjd_P_q4JsKWYrT3W_NKPr8w6oU7K_YCevXIk-RmChhVbhsaCFOzdjoMV1y19BFQvaXcOyBfmBkFo3NEHBv0PZUm6pbxQU&u_asig=05ZKWgk1Uml8jErQXZk-a32NdjI_eA2ijcDNkWf5xF07ppJVbedkbiL2ktfaxSPJix3-gg4ZkChELFNtwzItFXb4BMSfk33kOjWksP4cnRSPA-03k4lqRUFlXGCETBzZZ052r8SwUOSISuWDC7tz4dAALNEcnVEvOgXdh_jOWwV5n9JS7q8ZD7Xtz2Ly-b0kmuyAKRFSVJkkdwVUnyHAIJzTzV1zpIh405-Dffu88FKXBuiUTPgt-8ajpanQCW5Xq5qBR97QLsOYcZJeUxi-_JXu3h9VXwMyh6PgyDIVSG1W8eja8jWmzEZpJpI62cLJdFvcob-3mcfVCNS-ach8kgLgxFFdizMIklqFktSn363qdtWukvFcVQRgOfbIfHosEymWspDxyAEEo4kbsryBKb9Q&u_aref=QEYsosONoFPaHFaFjWf3hdY6MKQ%3D)
+
 # 项目
 
 ## `Zxing`源码解读
