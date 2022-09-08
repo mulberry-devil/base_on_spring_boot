@@ -3282,3 +3282,40 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/qq_46015650/article/details/123799556)
 
+###  建造者模式
+
+将对象实例的创建和使用分离，更加注重方法的调用顺序，工厂模式更加注重创建，不关心方法调用顺序
+
+`com/caston/base_on_spring_boot/designpatterns/buildermode`
+
+### 原型模式
+
+由一个对象实例作为模板创建出其他对象实例
+
+[相关链接](https://cloud.tencent.com/developer/article/2026581)
+
+## UML图
+
+- 结构图
+  - 类图
+  - 轮廓图
+  - 组件图
+  - 组合结构图
+  - 对象图
+  - 部署图
+  - 包图
+- 行为图
+  - 活动图
+  - 用例图
+  - 状态机图
+  - 交互图
+    - 序列图
+    - 时序图
+    - 通讯图
+    - 交互概览图
+
+### 类图
+
+描述了系统中对象的类型以及它们之间存在的各种静态关系。 即用于描述类与类之间的关系。
+
+[相关链接](https://blog.csdn.net/weixin_46897073/article/details/122118370)
