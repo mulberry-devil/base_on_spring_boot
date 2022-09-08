@@ -3282,3 +3282,8 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/qq_46015650/article/details/123799556)
 
+### 建造者模式
+
+将对象实例的创建和使用分离，更加注重方法的调用顺序，工厂模式更加注重创建，不关心方法调用顺序
+
+`com/caston/base_on_spring_boot/designpatterns/buildermode`
