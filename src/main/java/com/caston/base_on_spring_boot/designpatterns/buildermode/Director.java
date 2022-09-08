@@ -8,7 +8,7 @@ public class Director {
     }
 
     public Product1 construct() {
-        builder.build();
+        builder.buildPart1().buildPart2().buildPart3();
         Product1 product = builder.getProduct();
         return product;
     }

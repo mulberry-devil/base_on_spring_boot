@@ -3,7 +3,9 @@ package com.caston.base_on_spring_boot.designpatterns.buildermode;
 public interface Builder {
     Product1 product = new Product1();
 
-    void build();
+    Builder buildPart1();
+    Builder buildPart2();
+    Builder buildPart3();
 
     Product1 getProduct();
 }
