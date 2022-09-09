@@ -3292,7 +3292,17 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 由一个对象实例作为模板创建出其他对象实例
 
+`com/caston/base_on_spring_boot/designpatterns/prototype`
+
 [相关链接](https://cloud.tencent.com/developer/article/2026581)
+
+### 适配器模式
+
+将一个接口转换成客户希望的另一个接口，使接口不兼容的那些类可以一起工作
+
+`com/caston/base_on_spring_boot/designpatterns/adapter`
+
+[相关链接](https://blog.csdn.net/qq_37774171/article/details/122643900)
 
 ## UML图
 
