@@ -3304,7 +3304,36 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/qq_37774171/article/details/122643900)
 
-组合模式
+### 代理模式
+
+使用代理去代理方法的实现，并可进行增强操作
+
+- 静态代理 -> `com/caston/base_on_spring_boot/designpatterns/proxy/staticproxy`
+
+  当接口增加方法时，代理类也要增加方法
+
+- JDK动态代理 -> `com/caston/base_on_spring_boot/designpatterns/proxy/jdkroxy`
+
+  实现了被代理对象所实现的接口 
+
+- cglib动态代理 -> `com/caston/base_on_spring_boot/designpatterns/proxy/cglibproxy`
+
+  可代理被代理对象没有实现接口的对象，也可代理CLass类
+
+[相关链接](https://juejin.cn/post/7011357346018361375) [相关链接](https://blog.csdn.net/spade_Kwo/article/details/122293415) [相关链接](https://developer.aliyun.com/article/1009860#:~:text=JDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E9%9C%80%E8%A6%81%E6%8E%A5%E5%8F%A3%E6%89%8D%E8%83%BD%E5%AE%8C%E6%88%90%EF%BC%8C%E8%80%8C%E5%A6%82%E6%9E%9C%E4%B8%8D%E6%8F%90%E4%BE%9B%E6%8E%A5%E5%8F%A3%EF%BC%8C%E5%8F%AA%E6%9C%89%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%96%B9%E6%B3%95%E7%B1%BB%EF%BC%8C%E5%8F%AF%E4%BB%A5%E4%BD%BF%E7%94%A8%E4%B8%89%E6%96%B9%E6%8F%92%E4%BB%B6CGLIB%E6%9D%A5%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%EF%BC%8C%E9%87%87%E7%94%A8%E8%BF%99%E4%B8%AA%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E6%8A%80%E6%9C%AF%EF%BC%8C%E9%9C%80%E8%A6%81%E5%BC%95%E5%85%A5%E4%B8%89%E6%96%B9jar%E5%8C%85%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%90%AD%E5%BB%BAmaven%E9%A1%B9%E7%9B%AE%EF%BC%8C%E5%BC%95%E5%85%A5CGLIB%20jar%E5%8C%85,%EF%BC%8C%E9%80%9A%E8%BF%87maven%E5%AE%98%E7%BD%91%E6%90%9C%E7%B4%A2%E6%B7%BB%E5%8A%A0%EF%BC%8C%E4%BA%A6%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E4%B8%8B%E8%BD%BDjar%E6%96%87%E4%BB%B6%E3%80%82%20%281%29%E3%80%81%E5%8A%A0%E5%85%A5CGLIB%E4%BE%9D%E8%B5%96)
+
+### 装饰者模式
+
+能够在不修改目标类也不使用继承的情况下，动态地扩展一个类的功能 
+
+`com/caston/base_on_spring_boot/designpatterns/decorator`
+
+[相关链接](https://blog.csdn.net/m0_60117382/article/details/123619638)（不同点的第二点暂时无法理解）
+
+- 装饰模式应该为所装饰的对象增强功能
+- 代理模式对代理的对象施加控制，并不提供对象本身的增强功能。 
+
+### 组合模式
 
 创建了对象组的树形结构，将对象组合成树状结构以表示“整体-部分”的层次关系 
 
