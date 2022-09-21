@@ -3304,6 +3304,16 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/qq_37774171/article/details/122643900)
 
+组合模式
+
+创建了对象组的树形结构，将对象组合成树状结构以表示“整体-部分”的层次关系 
+
+`com/caston/base_on_spring_boot/designpatterns/combination`
+
+- Java中的GUI就是一种层次关系，例窗口包含按钮，按钮包含文本
+
+[相关链接](https://juejin.cn/post/7031727773613817893)
+
 ## UML图
 
 - 结构图
