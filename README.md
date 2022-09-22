@@ -3343,6 +3343,14 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://juejin.cn/post/7031727773613817893)
 
+### 外观模式（门面模式）
+
+为复杂的子系统调用提供一个统一的入口，是迪米特法则的一种具体实现。
+
+`com/caston/base_on_spring_boot/designpatterns/facade`
+
+[相关链接](https://blog.csdn.net/weixin_39296283/article/details/105009223) [相关链接](https://juejin.cn/post/6844903680303431693)
+
 ## UML图
 
 - 结构图
