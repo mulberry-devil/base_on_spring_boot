@@ -3357,6 +3357,14 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/weixin_39296283/article/details/105009223) [相关链接](https://juejin.cn/post/6844903680303431693)
 
+### 桥接模式
+
+通过聚合的方式充当桥梁，实现类与类之间的关联
+
+`com/caston/base_on_spring_boot/designpatterns/bridging`
+
+[相关链接](https://blog.csdn.net/qq_43470725/article/details/120493705)
+
 ## UML图
 
 - 结构图
