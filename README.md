@@ -3390,3 +3390,14 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 描述了系统中对象的类型以及它们之间存在的各种静态关系。 即用于描述类与类之间的关系。
 
 [相关链接](https://blog.csdn.net/weixin_46897073/article/details/122118370)
+
+## JDK8和JDK11差异
+
+### ArrayList
+
+- 在进行扩容判断时，8是传入 size + 1 来进行计算最小容量来判断的，11是传入size，根据是否等于数组长度来判断是否需要扩容
+
+### CopyOnWriteArrayList
+
+- 8是用ReentrantLock来保证线程安全，11是用synchronized来保证的，在11更多使用clone来代替Arrays.copyOf来提高性能，Arrays.copyOf底层会使用到System.arraycopy。
+- 在没有指定index的add中，8的add是通过复制创建新的数组，新数组增加元素后将原数组替换为新数组，11的add是通过复制后直接替换原数组，并直接增加元素
