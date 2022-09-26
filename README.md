@@ -3365,6 +3365,14 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/qq_43470725/article/details/120493705)
 
+### 享元模式
+
+类似线程池，将共享实例存入，减少内存的消耗
+
+`com/caston/base_on_spring_boot/flyweight`
+
+[相关链接](https://blog.csdn.net/Liuxiangming1314/article/details/124424100)
+
 ## UML图
 
 - 结构图
