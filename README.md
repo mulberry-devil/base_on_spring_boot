@@ -3373,6 +3373,14 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/Liuxiangming1314/article/details/124424100)
 
+策略模式
+
+对于同一个业务功能，在不同的场景需求下提供不同的实现逻辑，来达到动态切换业务算法 ，满足不同场景的目的
+
+`com/caston/base_on_spring_boot/designpatterns/tactics`
+
+[相关链接](https://blog.csdn.net/m4330187/article/details/121292879) [相关链接](https://juejin.cn/post/7110893034812178446)
+
 ## UML图
 
 - 结构图
