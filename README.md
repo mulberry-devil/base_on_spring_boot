@@ -2733,6 +2733,8 @@ Spring创建Bean过程为实例化、属性注入、初始化，在实例化A对
 
 [B+树](https://juejin.cn/post/6929833495082565646)
 
+[相关链接](https://juejin.cn/post/7106131535857713160)
+
 # `Redis`
 
 缓存雪崩：同一时刻大量热点数据过期，大量请求直接通过数据库
@@ -2799,6 +2801,10 @@ String、List、Set、Sort Set、Hash
 - 设置永不过期
 
 [链接](https://juejin.cn/post/7002011542145204261#heading-65)
+
+## 脑裂
+
+[相关链接](https://blog.csdn.net/cxy_t/article/details/110825175)
 
 ------
 
@@ -3373,7 +3379,7 @@ RabbitMQ使用发送方确认模式，确保消息正确地发送到RabbitMQ。
 
 [相关链接](https://blog.csdn.net/Liuxiangming1314/article/details/124424100)
 
-策略模式
+### 策略模式
 
 对于同一个业务功能，在不同的场景需求下提供不同的实现逻辑，来达到动态切换业务算法 ，满足不同场景的目的
 
